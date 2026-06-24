@@ -6,6 +6,7 @@ import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-si
 import { useAuth } from "../../providers/AuthProvider";
 import { RootStackParamList } from "../../nav/ScreenParams";
 import { toast } from "sonner-native";
+import GoogleIcon from "../../icon/Google";
 
 const GoogleAuthButton: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -26,8 +27,12 @@ const GoogleAuthButton: React.FC = () => {
 
       await loginWithGoogle(idToken);
       toast.success("Logged in with Google successfully!");
-      navigation.navigate("Dashboard");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Dashboard" }],
+      });
     } catch (error: any) {
+      console.log(error)
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         // user cancelled — do nothing
       } else if (error.code === statusCodes.IN_PROGRESS) {
@@ -53,11 +58,7 @@ const GoogleAuthButton: React.FC = () => {
         <ActivityIndicator color="#374151" size="small" />
       ) : (
         <View style={styles.inner}>
-          <Image
-            source={{ uri: "https://www.svgrepo.com/show/355037/google.svg" }}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <GoogleIcon />
           <Text style={styles.label}>Continue with Google</Text>
         </View>
       )}

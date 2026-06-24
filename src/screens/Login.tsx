@@ -64,7 +64,10 @@ const Login: React.FC = () => {
     try {
       await login(email, password);
       toast.success("Login successful!");
-      navigation.navigate("Dashboard");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Dashboard" }],
+      });
     } catch (error: any) {
       toast.error(getErrorMessage(error.message));
     } finally {
@@ -74,7 +77,6 @@ const Login: React.FC = () => {
 
   return (
     <View style={LoginStyles.background}>
-      {/* Decorative blobs that mimic the web Background component */}
       <View style={[LoginStyles.blob, LoginStyles.blobTopLeft]} />
       <View style={[LoginStyles.blob, LoginStyles.blobBottomRight]} />
 
@@ -162,12 +164,12 @@ const Login: React.FC = () => {
               <GoogleAuthButton />
 
               {/* Sign up */}
-              <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-              <View style={LoginStyles.signupRow}>
-                <Text style={LoginStyles.signupText}>No account? </Text>
-
-                  <Text style={LoginStyles.signupLink}>Sign up here!</Text>
-              </View>
+              <TouchableOpacity
+                style={LoginStyles.signupBtn}
+                onPress={() => navigation.navigate("Register")}
+                activeOpacity={0.85}
+              >
+                <Text style={LoginStyles.signupBtnText}>No account? Sign up here!</Text>
               </TouchableOpacity>
             </View>
           )}

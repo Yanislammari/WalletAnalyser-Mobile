@@ -25,15 +25,15 @@ export default function App() {
       <SafeAreaProvider>
         <NavigationContainer ref={navigationRef}>
           <AuthProvider>
-          <Toaster position="bottom-center" theme="dark" richColors />
             <Stack.Navigator initialRouteName="Login">
-              <Stack.Screen name="Register" component={Register} />
-              <Stack.Screen name="Login" component={Login} />
+              <Stack.Screen name="Register" component={Register} options={{ headerShown: false }}/>
+              <Stack.Screen name="Login" component={Login} options={{ headerShown: false }}/>
               <Stack.Screen name="Dashboard" component={Dashboard} />
-              <Stack.Screen name="ForgottenPassword" component={ForgottenPassword} />
+              <Stack.Screen name="ForgottenPassword" component={ForgottenPassword} options={{ headerShown: false }}/>
             </Stack.Navigator>
           </AuthProvider>
         </NavigationContainer>
+        <Toaster position="bottom-center" theme="dark" richColors closeButton />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

@@ -20,7 +20,7 @@ abstract class BaseService {
         "Content-Type": "application/json",
       };
     }
-
+    
     const res = await fetch(`${this.baseUrl}${path}`, {
       ...options,
       headers,

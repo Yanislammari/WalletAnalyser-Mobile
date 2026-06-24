@@ -33,10 +33,10 @@ export const LoginStyles = StyleSheet.create({
   kav: { flex: 1 },
   scroll: {
     flexGrow: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
-    paddingVertical: 40,
     paddingHorizontal: 20,
+    paddingTop: 100,
   },
 
   /* ── Card ── */
@@ -45,10 +45,10 @@ export const LoginStyles = StyleSheet.create({
     maxWidth: 380,
     backgroundColor: "rgba(255,255,255,0.88)",
     borderRadius: 24,
-    padding: 32,
+    paddingVertical : 15,
+    paddingHorizontal: 32,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.6)",
-    // Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
@@ -92,7 +92,7 @@ export const LoginStyles = StyleSheet.create({
     borderColor: "#d1d5db",
     borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: 13,
+    height: 60,
     fontSize: 15,
     color: "#111827",
     marginBottom: 12,
@@ -105,7 +105,7 @@ export const LoginStyles = StyleSheet.create({
     borderColor: "#d1d5db",
     borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: 13,
+    height: 60,
     marginBottom: 8,
   },
   passwordInput: {
@@ -179,20 +179,23 @@ export const LoginStyles = StyleSheet.create({
     color: "#374151",
     fontWeight: "500",
   },
-
-  /* ── Sign up ── */
-  signupRow: {
-    flexDirection: "row",
-    justifyContent: "center",
+  signupBtn: {
+    width: "100%",
+    borderRadius: 24,
+    paddingVertical: 12,
+    alignItems: "center",
+    backgroundColor: "#9333ea",
+    marginTop: 12,
   },
-  signupText: {
+  signupBtnText: {
+    fontSize: 14,
+    color: "#fff",
+    fontWeight: "600",
+  },
+  subtitle: {
     fontSize: 13,
     color: "#6b7280",
-  },
-  signupLink: {
-    fontSize: 16,
-    color: PURPLE,
-    fontWeight: "500",
-    marginTop : 5
+    marginTop: 4,
+    textAlign: "center",
   },
 });

@@ -106,6 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const mappedUser = mapUserResponseToUser(response.user);
       await persistSession(response.token, mappedUser);
       if (!mappedUser.activated) {
+        toast.info("Check your email to validate your account")
         await authService.sendActivationEmail(mappedUser.email);
       }
     } catch (error: any) {
@@ -119,6 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const mappedUser = mapUserResponseToUser(response.user);
       await persistSession(response.token, mappedUser);
       if (!mappedUser.activated) {
+        toast.info("Check your email to validate your account")
         await authService.sendActivationEmail(mappedUser.email);
       }
       return mappedUser;
@@ -134,6 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const mappedUser = mapUserResponseToUser(response.user);
       await persistSession(response.token, mappedUser);
       if (!mappedUser.activated) {
+        toast.info("Check your email to validate your account")
         await authService.sendActivationEmail(mappedUser.email);
       }
       return mappedUser;
