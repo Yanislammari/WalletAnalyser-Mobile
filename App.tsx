@@ -8,9 +8,9 @@ import { Toaster } from 'sonner-native';
 import { AuthProvider, navigationRef } from './src/providers/AuthProvider';
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { GOOGLE_CLIENT_ID } from './src/constants/env';
-import Dashboard from './src/screens/Dashboard';
 import ForgottenPassword from './src/screens/ForgottenPassword';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import NavBar from './src/components/footerHeader/NavBar';
 
 enableScreens();
 const Stack = createNativeStackNavigator();
@@ -28,8 +28,12 @@ export default function App() {
             <Stack.Navigator initialRouteName="Login">
               <Stack.Screen name="Register" component={Register} options={{ headerShown: false }}/>
               <Stack.Screen name="Login" component={Login} options={{ headerShown: false }}/>
-              <Stack.Screen name="Dashboard" component={Dashboard} />
               <Stack.Screen name="ForgottenPassword" component={ForgottenPassword} options={{ headerShown: false }}/>
+              <Stack.Screen
+                name="App"
+                component={NavBar}
+                options={{ headerShown: false }}
+              />
             </Stack.Navigator>
           </AuthProvider>
         </NavigationContainer>

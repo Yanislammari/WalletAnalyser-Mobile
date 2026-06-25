@@ -14,6 +14,7 @@ abstract class BaseService {
     let headers = options.headers || {};
     if (!isFormData) {
       const storedToken = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
+      console.log("token",storedToken)
       headers = {
         ...(options.headers as Record<string, string>),
         "Authorization" : `Bearer ${storedToken ?? ""}`,
@@ -37,7 +38,7 @@ abstract class BaseService {
       }
       throw new Error(error.message || "Request failed");
     }
-
+    if (res.status === 204) return undefined as T
     return res.json() as Promise<T>;
   }
 }

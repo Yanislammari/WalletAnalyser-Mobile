@@ -29,7 +29,7 @@ const GoogleAuthButton: React.FC = () => {
       toast.success("Logged in with Google successfully!");
       navigation.reset({
         index: 0,
-        routes: [{ name: "Dashboard" }],
+        routes: [{ name: "App" }],
       });
     } catch (error: any) {
       console.log(error)

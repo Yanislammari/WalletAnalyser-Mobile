@@ -106,7 +106,7 @@ const Register: React.FC = () => {
       toast.success("Account created successfully!");
       navigation.reset({
         index: 0,
-        routes: [{ name: "Dashboard" }],
+        routes: [{ name: "App" }],
       });
     } catch (error: any) {
       console.log(error)
