@@ -109,6 +109,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toast.info("Check your email to validate your account")
         await authService.sendActivationEmail(mappedUser.email);
       }
+
+      navigationRef.current?.reset({
+        index: 0,
+        routes: [{ name: "App"}],
+      });
     } catch (error: any) {
       throw new Error(error.message || "Login failed");
     }

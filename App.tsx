@@ -5,7 +5,7 @@ import Register from './src/screens/Register';
 import Login from './src/screens/Login';
 import { enableScreens } from 'react-native-screens';
 import { Toaster } from 'sonner-native';
-import { AuthProvider, navigationRef } from './src/providers/AuthProvider';
+import { AuthProvider, navigationRef, useAuth } from './src/providers/AuthProvider';
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { GOOGLE_CLIENT_ID } from './src/constants/env';
 import ForgottenPassword from './src/screens/ForgottenPassword';
@@ -28,18 +28,26 @@ function AppNavigator() {
   );
 }
 
+const RootNavigator = () => {
+  const { isAuthenticated } = useAuth(); // your hook
+
+  return (
+    <Stack.Navigator initialRouteName={isAuthenticated ? "App" : "Login"}>
+      <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
+      <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+      <Stack.Screen name="ForgottenPassword" component={ForgottenPassword} options={{ headerShown: false }} />
+      <Stack.Screen name="App" component={AppNavigator} options={{ headerShown: false }} />
+    </Stack.Navigator>
+  );
+};
+
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <NavigationContainer ref={navigationRef}>
           <AuthProvider>
-            <Stack.Navigator initialRouteName="Login">
-              <Stack.Screen name="Register" component={Register} options={{ headerShown: false }}/>
-              <Stack.Screen name="Login" component={Login} options={{ headerShown: false }}/>
-              <Stack.Screen name="ForgottenPassword" component={ForgottenPassword} options={{ headerShown: false }}/>
-              <Stack.Screen name="App" component={AppNavigator} options={{ headerShown: false }} />
-            </Stack.Navigator>
+            <RootNavigator />
           </AuthProvider>
         </NavigationContainer>
         <Toaster position="bottom-center" theme="dark" richColors closeButton />

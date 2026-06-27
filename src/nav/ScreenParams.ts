@@ -1,6 +1,6 @@
 export type RootStackParamList = {
-  Login: undefined; // = Login screen take no param
+  Login: undefined;
   Register : undefined;
   ForgottenPassword : undefined;
-  App : undefined; //access nav bar
+  App : undefined;
 };

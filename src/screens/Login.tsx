@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -39,7 +39,7 @@ const getErrorMessage = (backendMessage: string): string => {
 
 const Login: React.FC = () => {
   const navigation = useNavigation<LoginNavigationProp>();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
 
   const [email, setEmail] = useState("alexisduplessis2003@gmail.com");
   const [password, setPassword] = useState("MoiMeme94@");
