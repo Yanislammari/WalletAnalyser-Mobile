@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { Portfolio } from "../../models/Portfolio";
 import PortfolioService from "../../services/PortfolioService";
 import { toast } from "sonner-native";
+import { usePortfolio } from "../../providers/PortfolioProvider";
 
 interface Props {
   portfolio: Portfolio;
@@ -14,6 +15,7 @@ interface Props {
 
 export default function PortfolioCard({ portfolio, onDelete, color }: Props) {
   const navigation = useNavigation<any>();
+  const { refresh } = usePortfolio();
   const portfolioService = PortfolioService.getInstance();
 
   const [assetCount, setAssetCount] = useState<number | null>(null);
@@ -45,6 +47,7 @@ export default function PortfolioCard({ portfolio, onDelete, color }: Props) {
       await portfolioService.deletePortfolio(portfolio.id);
       setDeleteModalVisible(false);
       onDelete(portfolio.id);
+      refresh()
     } catch(e : any) {
       console.log(e)
       toast.error("Can't delete this portfolio try again later")

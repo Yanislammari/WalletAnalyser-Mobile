@@ -1,10 +1,11 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Dashboard from "../../screens/Portfolio";
+import Dashboard from "../screens/Dashboard";
 import Icon from "react-native-vector-icons/Ionicons";
-import Portfolio from "../../screens/Portfolio";
-import Metrics from "../../screens/Metrics";
-import Analysis from "../../screens/Analysis";
-import Badge from "../../screens/Badge";
+import Portfolios from "../screens/Portfolio";
+import Metrics from "../screens/Metrics";
+import Analysis from "../screens/Analysis";
+import Badge from "../screens/Badge";
+import Header from "./Header";
 
 type NavBarParamList = {
   Dashboard : undefined;
@@ -35,11 +36,11 @@ export default function NavBar() {
         tabBarInactiveTintColor: "gray",
       })}
     >
-      <Tab.Screen name="Portfolio" component={Portfolio} />
-      <Tab.Screen name="Metrics" component={Metrics} />
-      <Tab.Screen name="Dashboard" component={Dashboard} />
-      <Tab.Screen name="Analysis" component={Analysis} />
-      <Tab.Screen name="Badge" component={Badge} />
+      <Tab.Screen name="Dashboard" component={Dashboard} options={{headerShown: true, header: () => <Header />}}/>
+      <Tab.Screen name="Portfolio" component={Portfolios} options={{headerShown: true, header: () => <Header showChoice={false} />}}/>
+      <Tab.Screen name="Metrics" component={Metrics} options={{headerShown: true, header: () => <Header/>}}/>
+      <Tab.Screen name="Analysis" component={Analysis} options={{headerShown: true, header: () => <Header/>}}/>
+      <Tab.Screen name="Badge" component={Badge} options={{headerShown: true, header: () => <Header/>}}/>
     </Tab.Navigator>
   );
 }

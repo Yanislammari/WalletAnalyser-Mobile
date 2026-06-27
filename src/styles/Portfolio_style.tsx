@@ -10,7 +10,7 @@ export const PORTFOLIO_COLORS = [
 ];
 
 export const stylesPortfolio = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#f9fafb" },
+  safe: { flex: 1, backgroundColor: "#f9fafb", paddingVertical : 16 },
   container: { flex: 1, paddingHorizontal: 16 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 },
   title: { fontSize: 20, fontWeight: "700", color: "#111827" },
@@ -27,7 +27,7 @@ export const stylesPortfolio = StyleSheet.create({
   emptyTitle: { fontSize: 16, fontWeight: "600", color: "#374151" },
   emptySubtitle: { fontSize: 13, color: "#9ca3af" },
   noResults: { fontSize: 13, color: "#6b7280", marginTop: 8 },
-  pagination: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 16, paddingVertical: 12 },
+  pagination: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 16, paddingVertical: 8 },
   pageBtn: { padding: 8, borderRadius: 8, backgroundColor: "#f3f4f6" },
   pageBtnDisabled: { opacity: 0.4 },
   pageText: { fontSize: 14, color: "#374151", fontWeight: "500" },

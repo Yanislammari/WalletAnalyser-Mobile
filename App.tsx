@@ -10,7 +10,8 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { GOOGLE_CLIENT_ID } from './src/constants/env';
 import ForgottenPassword from './src/screens/ForgottenPassword';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import NavBar from './src/components/footerHeader/NavBar';
+import NavBar from './src/nav/NavBar';
+import { PortfolioProvider } from './src/providers/PortfolioProvider';
 
 enableScreens();
 const Stack = createNativeStackNavigator();
@@ -18,6 +19,14 @@ const Stack = createNativeStackNavigator();
 GoogleSignin.configure({
   webClientId: GOOGLE_CLIENT_ID,
 });
+
+function AppNavigator() {
+  return (
+    <PortfolioProvider>
+      <NavBar />
+    </PortfolioProvider>
+  );
+}
 
 export default function App() {
   return (
@@ -29,11 +38,7 @@ export default function App() {
               <Stack.Screen name="Register" component={Register} options={{ headerShown: false }}/>
               <Stack.Screen name="Login" component={Login} options={{ headerShown: false }}/>
               <Stack.Screen name="ForgottenPassword" component={ForgottenPassword} options={{ headerShown: false }}/>
-              <Stack.Screen
-                name="App"
-                component={NavBar}
-                options={{ headerShown: false }}
-              />
+              <Stack.Screen name="App" component={AppNavigator} options={{ headerShown: false }} />
             </Stack.Navigator>
           </AuthProvider>
         </NavigationContainer>

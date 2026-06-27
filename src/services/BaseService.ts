@@ -14,7 +14,6 @@ abstract class BaseService {
     let headers = options.headers || {};
     if (!isFormData) {
       const storedToken = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
-      console.log("token",storedToken)
       headers = {
         ...(options.headers as Record<string, string>),
         "Authorization" : `Bearer ${storedToken ?? ""}`,

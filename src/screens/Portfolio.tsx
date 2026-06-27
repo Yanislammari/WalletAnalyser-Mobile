@@ -1,10 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import {
   View, Text, FlatList, TextInput, TouchableOpacity,
   Modal, ActivityIndicator,
   ScrollView
 } from "react-native";
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from "react-native-vector-icons/Ionicons";
 import { useAuth } from "../providers/AuthProvider";
 import PortfolioService from "../services/PortfolioService";
@@ -14,12 +14,15 @@ import CurrencyService from "../services/CurrencyService";
 import type { Currency } from "../models/Currency";
 import { PORTFOLIO_COLORS, stylesPortfolio } from "../styles/Portfolio_style";
 import { toast } from "sonner-native";
+import { usePortfolio } from "../providers/PortfolioProvider";
 
 const PAGE_SIZE = 9;
 
-export default function Portfolio() {
+const Portfolios : React.FC = () => {
   const { user } = useAuth();
+  const { refresh } = usePortfolio();
   const portfolioService = PortfolioService.getInstance();
+  const insets = useSafeAreaInsets();
 
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [total, setTotal] = useState(0);
@@ -79,6 +82,7 @@ export default function Portfolio() {
       setNewCurrencyId("");
       setTotal((t) => t + 1);
       setReloadTrigger((r) => r + 1);
+      refresh();
     } catch {
       toast.error("Can't create the portfolio try again later")
     } finally {
@@ -95,9 +99,8 @@ export default function Portfolio() {
   const noResults = !loading && total === 0;
 
   return (
-    <SafeAreaView style={stylesPortfolio.safe}>
+    <View style={stylesPortfolio.safe}>
       <View style={stylesPortfolio.container}>
-
         {/* Header */}
         <View style={stylesPortfolio.header}>
           <View>
@@ -153,6 +156,7 @@ export default function Portfolio() {
               )}
               contentContainerStyle={stylesPortfolio.list}
             />
+
             {/* Pagination */}
             <View style={stylesPortfolio.pagination}>
               <TouchableOpacity
@@ -238,6 +242,8 @@ export default function Portfolio() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
+
+export default Portfolios
