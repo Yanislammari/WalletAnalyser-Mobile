@@ -8,6 +8,9 @@ import type { CreatePortfolioPayload } from "../payloads/CreatePortfolioPayload"
 import type { AddAssetBuyPayload } from "../payloads/AddAssetBuyPayload";
 import type { AddAssetSellPayload } from "../payloads/AddAssetSellPayload";
 import type { AddAssetDividendPayload } from "../payloads/AddAssetDividendPayload";
+import type { UpdateAssetBuyPayload } from "../payloads/UpdateAssetBuyPayload";
+import type { UpdateAssetSellPayload } from "../payloads/UpdateAssetSellPayload";
+import type { UpdateAssetDividendPayload } from "../payloads/UpdateAssetDividendPayload";
 import type { AssetCountResponse } from "../responses/AssetCountResponse";
 import type { PortfolioTotalResponse } from "../responses/PortfolioTotalResponse";
 import type { MetricResponse } from "../responses/MetricResponse";
@@ -100,13 +103,16 @@ class PortfolioService extends BaseService {
     });
   }
 
-  public async getDividendsByPortfolioId(portfolioId: string, page: number, limit: number, from?: string, to?: string): Promise<PaginatedResponse<AssetDividendResponse>> {
+  public async getDividendsByPortfolioId(portfolioId: string, page: number, limit: number, from?: string, to?: string, company?: string): Promise<PaginatedResponse<AssetDividendResponse>> {
     const params: URLSearchParams = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (from) {
       params.set("from", from);
     }
     if (to) {
       params.set("to", to);
+    }
+    if (company) {
+      params.set("company", company);
     }
 
     return this.request<PaginatedResponse<AssetDividendResponse>>(`/portfolio/${portfolioId}/dividends?${params}`, {
@@ -176,12 +182,43 @@ class PortfolioService extends BaseService {
     });
   }
 
-  public async getMetrics(portfolioId: string): Promise<MetricResponse> {
-    return this.request<MetricResponse>(`/portfolio/${portfolioId}/metrics`, { method: "GET" });
+  public async updateAssetBuy(portfolioId: string, buyId: string, payload: UpdateAssetBuyPayload): Promise<AssetBuyResponse> {
+    return this.request<AssetBuyResponse>(`/portfolio/${portfolioId}/buys/${buyId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  public async updateAssetSell(portfolioId: string, sellId: string, payload: UpdateAssetSellPayload): Promise<AssetSellResponse> {
+    return this.request<AssetSellResponse>(`/portfolio/${portfolioId}/sells/${sellId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  public async updateAssetDividend(portfolioId: string, dividendId: string, payload: UpdateAssetDividendPayload): Promise<AssetDividendResponse> {
+    return this.request<AssetDividendResponse>(`/portfolio/${portfolioId}/dividends/${dividendId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  public async getMetrics(portfolioId: string, fromDate?: string): Promise<MetricResponse> {
+    const qs = fromDate ? `?fromDate=${encodeURIComponent(fromDate)}` : "";
+    return this.request<MetricResponse>(`/portfolio/${portfolioId}/metrics${qs}`, { method: "GET" });
   }
 
   public async deletePortfolio(portfolioId: string): Promise<void> {
-    return this.request<void>(`/portfolio/${portfolioId}`, { method: "DELETE" });
+    const res = await fetch(`${this.baseUrl}/portfolio/${portfolioId}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to delete portfolio");
+    }
   }
 }
 

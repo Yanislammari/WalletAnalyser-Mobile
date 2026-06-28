@@ -2,7 +2,7 @@ export interface AssetSellResponse {
   id: string;
   portfolioId: string;
   companyName: string | null;
-  assetPriceId: string | null;
+  assetId: string | null;
   sellCurrencyId: string;
   sellDate: string;
   assetSellAmount: number | null;

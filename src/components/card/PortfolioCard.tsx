@@ -60,7 +60,7 @@ export default function PortfolioCard({ portfolio, onDelete, color }: Props) {
     <>
       <TouchableOpacity
         style={styles.card}
-        //onPress={() => navigation.navigate("AnalysisDetail", { id: portfolio.id })}
+        onPress={() => navigation.navigate("PortfolioDetail", { id: portfolio.id, name : portfolio.name })}
         activeOpacity={0.85}
       >
         {/* Icon + Delete */}

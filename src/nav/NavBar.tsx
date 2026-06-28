@@ -6,14 +6,40 @@ import Metrics from "../screens/Metrics";
 import Analysis from "../screens/Analysis";
 import Badge from "../screens/Badge";
 import Header from "./Header";
+import PortfolioDetail from "../screens/PortfolioDetail";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { usePortfolio } from "../providers/PortfolioProvider";
+import { NavigatorScreenParams } from "@react-navigation/native";
+
+const Stack = createNativeStackNavigator();
+
+export type PortfolioStackParamList = {
+  PortfolioList: undefined;
+  PortfolioDetail: { id: string, name : string };
+};
 
 type NavBarParamList = {
   Dashboard : undefined;
-  Portfolio : undefined;
+  Portfolio : NavigatorScreenParams<PortfolioStackParamList>;
   Metrics : undefined;
   Badge : undefined;
   Analysis : undefined
 };
+
+function PortfolioStackNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="PortfolioList" component={Portfolios} options={{
+          headerShown: false,
+          header: () => <Header showChoice={false} />,
+        }}/>
+      <Stack.Screen name="PortfolioDetail" component={PortfolioDetail} options={{
+          headerShown: false,
+          header: () => <Header showChoice={false} />,
+        }}/>
+    </Stack.Navigator>
+  );
+}
 
 const Tab = createBottomTabNavigator<NavBarParamList>();
 
@@ -26,6 +52,7 @@ const TAB_ICONS: Record<keyof NavBarParamList, string> = {
 };
 
 export default function NavBar() {
+  const { selectedPortfolio } = usePortfolio();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -37,7 +64,29 @@ export default function NavBar() {
       })}
     >
       <Tab.Screen name="Dashboard" component={Dashboard} options={{headerShown: true, header: () => <Header />}}/>
-      <Tab.Screen name="Portfolio" component={Portfolios} options={{headerShown: true, header: () => <Header showChoice={false} />}}/>
+      <Tab.Screen
+        name="Portfolio"
+        component={PortfolioStackNavigator}
+        options={{
+          headerShown: true,
+          header: () => <Header showChoice={false} />,
+        }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault(); // block default tab behavior
+            if (selectedPortfolio) {
+              navigation.navigate('Portfolio', {
+                screen: 'PortfolioDetail',
+                params: { id: selectedPortfolio.id, name : selectedPortfolio.name }
+              });
+            } else {
+              navigation.navigate('Portfolio', {
+                screen: 'PortfolioList'
+              });
+            }
+          },
+        })}
+      />
       <Tab.Screen name="Metrics" component={Metrics} options={{headerShown: true, header: () => <Header/>}}/>
       <Tab.Screen name="Analysis" component={Analysis} options={{headerShown: true, header: () => <Header/>}}/>
       <Tab.Screen name="Badge" component={Badge} options={{headerShown: true, header: () => <Header/>}}/>

@@ -9,6 +9,7 @@ import type { User } from "../models/User";
 import type { RegisterPayload } from "../payloads/RegisterPayload";
 import type { AuthResponse } from "../responses/AuthResponse";
 import AuthService from "../services/AuthService";
+import SubscriptionService from "../services/SubscriptionService";
 
 export const navigationRef = React.createRef<NavigationContainerRef<any>>();
 export const AUTH_LOGOUT_EVENT = "auth:logout";
@@ -18,6 +19,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isAuthLoading: boolean;
+  isPro : boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<User>;
   loginWithGoogle: (idToken: string) => Promise<User>;
@@ -52,10 +54,34 @@ const mapUserResponseToUser = (u: UserResponse): User => ({
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const authService = AuthService.getInstance();
+  const subscriptionService = SubscriptionService.getInstance()
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const isAuthenticated = !!token;
+  const isPro: boolean = user?.subscribe ?? false;
+
+  useEffect(() => {
+    if (!token) return;
+    const loadSubscription = async () => {
+      try {
+        const status = await subscriptionService.getStatus();
+        setUser((prev) => {
+          if (!prev) return prev;
+          const updated = {
+            ...prev,
+            subscribe: status.isPro,
+          };
+          AsyncStorage.setItem(
+            STORAGE_KEYS.USER,
+            JSON.stringify(updated)
+          );
+          return updated;
+        });
+      } catch {}
+    };
+    loadSubscription();
+  }, [token]);
 
   useEffect(() => {
     const hydrate = async () => {
@@ -183,6 +209,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         token,
         isAuthenticated,
         isAuthLoading,
+        isPro,
         login,
         register,
         loginWithGoogle,
