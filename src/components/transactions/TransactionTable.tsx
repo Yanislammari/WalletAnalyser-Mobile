@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons"
 
 import CompanyFilter from './CompanyFilter';
@@ -19,9 +12,10 @@ import type { AssetBuyResponse } from '../../responses/AssetBuyResponse';
 import type { AssetSellResponse } from '../../responses/AssetSellResponse';
 import type { AssetDividendResponse } from '../../responses/AssetDividendResponse';
 import type { SortState } from '../../models/items/SortState';
-import { TABS, tabAccent } from '../../constants/transactionConstants';
+import { TABS } from '../../constants/transactionConstants';
 import { toggleSort, sortBuys, sortSells, sortDividends } from '../../utils/transactionSort';
 import { TabType } from '../../enums/TabType';
+import { transactionTableStyle } from '../../styles/transaction/transactionTableStyle';
 
 const PAGE_SIZE = 10;
 
@@ -82,11 +76,11 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
     : props.dividendTotal;
 
   return (
-    <View style={styles.card}>
+    <View style={transactionTableStyle.card}>
 
       {/* ── Tab bar + filters ── */}
-      <View style={styles.tabBar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabs}>
+      <View style={transactionTableStyle.tabBar}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={transactionTableStyle.tabs}>
           {TABS.map((tab) => {
             const active = props.activeTab === tab.key;
             const total = tabTotal(tab.key);
@@ -94,14 +88,14 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
               <TouchableOpacity
                 key={tab.key}
                 onPress={() => props.onTabChange(tab.key)}
-                style={[styles.tab, active && styles.tabActive]}
+                style={[transactionTableStyle.tab, active && transactionTableStyle.tabActive]}
               >
-                <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>
+                <Text style={[transactionTableStyle.tabLabel, active && transactionTableStyle.tabLabelActive]}>
                   {tab.label}
                 </Text>
                 {total > 0 && (
-                  <View style={[styles.badge, active && styles.badgeActive]}>
-                    <Text style={[styles.badgeText, active && styles.badgeTextActive]}>
+                  <View style={[transactionTableStyle.badge, active && transactionTableStyle.badgeActive]}>
+                    <Text style={[transactionTableStyle.badgeText, active && transactionTableStyle.badgeTextActive]}>
                       {total}
                     </Text>
                   </View>
@@ -112,7 +106,7 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
         </ScrollView>
 
         {/* Filters row */}
-        <View style={styles.filters}>
+        <View style={transactionTableStyle.filters}>
           <DateRangeFilter
             from={props.dateFrom}
             to={props.dateTo}
@@ -128,9 +122,9 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
       </View>
 
       {/* ── Content ── */}
-      <View style={styles.content}>
+      <View style={transactionTableStyle.content}>
         {props.loading ? (
-          <View style={styles.loadingContainer}>
+          <View style={transactionTableStyle.loadingContainer}>
             <ActivityIndicator size="large" color="#7C3AED" />
           </View>
         ) : (
@@ -151,17 +145,18 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View>
                     {/* Header */}
-                    <View style={styles.tableHeaderRow}>
-                      {['Date', 'Company', 'Shares', 'Price / share', 'Amount'].map((col) => (
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      {['Date', 'Company', 'Amount'].map((col) => (
                         <SortableHeader
                           key={col}
                           label={col}
-                          columnKey={col.toLowerCase().replace(' / ', 'Per').replace(' ', '')}
+                          columnKey={col.toLowerCase()}
                           sortState={buySortState}
                           onSort={handleBuySort}
+                          style={{ width: 100 }} // fixed per column
                         />
                       ))}
-                      <View style={styles.actionCol} />
+                      <View style={{ width: 16}} />
                     </View>
                     {/* Rows */}
                     {sortedBuys.map((row) => (
@@ -201,7 +196,7 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
               ) : (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View>
-                    <View style={styles.tableHeaderRow}>
+                    <View style={transactionTableStyle.tableHeaderRow}>
                       {['Date', 'Company', 'Shares', 'Price / share', 'Amount', 'Capital gain'].map((col) => (
                         <SortableHeader
                           key={col}
@@ -211,7 +206,7 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
                           onSort={handleSellSort}
                         />
                       ))}
-                      <View style={styles.actionCol} />
+                      <View style={transactionTableStyle.actionCol} />
                     </View>
                     {sortedSells.map((row) => (
                       <TransactionRow
@@ -248,7 +243,7 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
               ) : (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View>
-                    <View style={styles.tableHeaderRow}>
+                    <View style={transactionTableStyle.tableHeaderRow}>
                       {['Date', 'Company', 'Amount', 'Currency'].map((col) => (
                         <SortableHeader
                           key={col}
@@ -258,7 +253,7 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
                           onSort={handleDividendSort}
                         />
                       ))}
-                      <View style={styles.actionCol} />
+                      <View style={transactionTableStyle.actionCol} />
                     </View>
                     {sortedDividends.map((row) => (
                       <TransactionRow
@@ -291,96 +286,14 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
 // ── Add row button ─────────────────────────────────────────────────────────────
 
 const AddRowButton: React.FC<{ onPress: () => void }> = ({ onPress }) => (
-  <TouchableOpacity style={styles.addRowBtn} onPress={onPress}>
+  <TouchableOpacity style={transactionTableStyle.addRowBtn} onPress={onPress}>
     <Ionicons name="add" size={15} color="#7C3AED" />
-    <Text style={styles.addRowText}>Add a row</Text>
+    <Text style={transactionTableStyle.addRowText}>Add a row</Text>
   </TouchableOpacity>
 );
 
 // ── Styles ─────────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-    overflow: 'hidden',
-  },
 
-  // Tab bar
-  tabBar: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  tabs: {
-    paddingHorizontal: 12,
-    paddingTop: 12,
-  },
-  tab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    marginRight: 4,
-    borderRadius: 10,
-  },
-  tabActive: {
-    backgroundColor: '#F9FAFB',
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-    borderBottomWidth: 0,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-  },
-  tabLabel: { fontSize: 13, fontWeight: '500', color: '#9CA3AF' },
-  tabLabelActive: { color: '#111827' },
-  badge: {
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 999,
-    backgroundColor: '#F3F4F6',
-  },
-  badgeActive: { backgroundColor: '#EDE9FE' },
-  badgeText: { fontSize: 10, fontWeight: '600', color: '#6B7280' },
-  badgeTextActive: { color: '#7C3AED' },
-
-  // Filters
-  filters: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-
-  // Content
-  content: { padding: 12 },
-  loadingContainer: { paddingVertical: 40, alignItems: 'center' },
-
-  // Table
-  tableHeaderRow: {
-    flexDirection: 'row',
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F9FAFB',
-  },
-  actionCol: { width: 48 },
-
-  // Add row
-  addRowBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 10,
-  },
-  addRowText: { fontSize: 13, fontWeight: '600', color: '#7C3AED' },
-});
 
 export default TransactionTable;

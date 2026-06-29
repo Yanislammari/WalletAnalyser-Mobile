@@ -22,32 +22,30 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = (props) => {
   const isActive: boolean = !!props.from || !!props.to;
 
   const handleClear = () => {
-    props.onFromChange("");
-    props.onToChange("");
+    props.onFromChange('');
+    props.onToChange('');
   };
 
   const label = (): string => {
-    if (props.from && props.to) return `${props.from} → ${props.to}`;
-    if (props.from) return `From ${props.from}`;
-    if (props.to) return `Until ${props.to}`;
-    return "Date range";
+    if (props.from || props.to) return `Active`;
+    return 'Date range';
   };
 
   return (
     <>
       <TouchableOpacity
         onPress={() => setOpen((prev) => !prev)}
-        style={[styles.button, isActive ? styles.buttonActive : styles.buttonInactive]}
+        style={[styles.trigger, isActive && styles.triggerActive]}
         activeOpacity={0.7}
       >
         <Ionicons
           name="calendar-outline"
           size={14}
-          color={isActive ? "#7e22ce" : "#4b5563"}
+          color={isActive ? '#7C3AED' : '#4B5563'}
         />
         <Text
           numberOfLines={1}
-          style={[styles.label, isActive ? styles.labelActive : styles.labelInactive]}
+          style={[styles.triggerText, isActive && styles.triggerTextActive]}
         >
           {label()}
         </Text>
@@ -59,13 +57,13 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = (props) => {
             }}
             hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
           >
-            <Ionicons name="close-outline" size={14} color="#a855f7" />
+            <Ionicons name="close-outline" size={14} color="#7C3AED" />
           </TouchableOpacity>
         ) : (
           <Ionicons
-            name={open ? "chevron-up-outline" : "chevron-down-outline"}
+            name={open ? 'chevron-up' : 'chevron-down'}
             size={13}
-            color="#4b5563"
+            color="#4B5563"
           />
         )}
       </TouchableOpacity>
@@ -73,35 +71,48 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = (props) => {
       <Modal
         visible={open}
         transparent
-        animationType="fade"
+        animationType="slide"  // slide up like a bottom sheet
         onRequestClose={() => setOpen(false)}
       >
         <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
-          <Pressable style={styles.panel} onPress={() => {}}>
+          <Pressable style={styles.dropdown} onPress={() => {}}>
+            <View style={styles.dragHandle} />
             <Text style={styles.panelTitle}>DATE RANGE</Text>
+            <View style={styles.divider} />
 
-            <View style={styles.fields}>
-              <View>
+            <View style={[styles.fields, { marginTop: 12 }]}>
+              <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>From</Text>
                 <DateInput value={props.from} onChange={props.onFromChange} />
               </View>
-              <View>
+              <View style={styles.fieldRow}>
                 <Text style={styles.fieldLabel}>To</Text>
                 <DateInput value={props.to} onChange={props.onToChange} />
               </View>
             </View>
 
             {isActive && (
-              <TouchableOpacity
-                onPress={() => {
-                  handleClear();
-                  setOpen(false);
-                }}
-                style={styles.clearButton}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.clearText}>Clear filter</Text>
-              </TouchableOpacity>
+              <View style={styles.clearState}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setOpen(false);
+                  }}
+                  style={styles.clearButton}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.clearText}>Done</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    handleClear();
+                    setOpen(false);
+                  }}
+                  style={styles.clearButton}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.clearText}>Clear filter</Text>
+                </TouchableOpacity>
+              </View>
             )}
           </Pressable>
         </Pressable>
@@ -111,78 +122,114 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = (props) => {
 };
 
 const styles = StyleSheet.create({
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+  // Trigger — matches your existing trigger style
+  trigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#fff',
   },
-  buttonActive: {
-    backgroundColor: "#faf5ff",
-    borderColor: "#e9d5ff",
+  triggerActive: {
+    backgroundColor: '#F5F3FF',
+    borderColor: '#DDD6FE',
   },
-  buttonInactive: {
-    backgroundColor: "#ffffff",
-    borderColor: "#e5e7eb",
-  },
-  label: {
+  triggerText: {
     fontSize: 13,
-    maxWidth: 160,
-    flexShrink: 1,
+    color: '#4B5563',
   },
-  labelActive: {
-    color: "#7e22ce",
-    fontWeight: "600",
+  triggerTextActive: {
+    color: '#7C3AED',
+    fontWeight: '600',
   },
-  labelInactive: {
-    color: "#4b5563",
-  },
+
+  // Backdrop
   backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.2)",
-    justifyContent: "flex-start",
-    alignItems: "flex-end",
-    paddingTop: 60,
-    paddingRight: 16,
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(0,0,0,0.2)',
   },
-  panel: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 16,
-    minWidth: 300,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+
+  // Bottom sheet panel
+  dropdown: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 8,
+    paddingBottom: 32,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: -4 },
     elevation: 8,
-    borderWidth: 1,
-    borderColor: "#f3f4f6",
   },
+
+  dragHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E5E7EB',
+    alignSelf: 'center',
+    marginBottom: 16,
+    marginTop: 4,
+  },
+
   panelTitle: {
     fontSize: 11,
-    fontWeight: "600",
-    color: "#6b7280",
+    fontWeight: '600',
+    color: '#9CA3AF',
     letterSpacing: 0.8,
-    marginBottom: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
   },
+
+  divider: {
+    height: 1,
+    backgroundColor: '#F3F4F6',
+    marginVertical: 4,
+  },
+
   fields: {
+    paddingHorizontal: 16,
     gap: 12,
   },
+
+  fieldRow: {
+    gap: 6,
+  },
+
   fieldLabel: {
-    fontSize: 11,
-    color: "#9ca3af",
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#6B7280',
     marginBottom: 4,
   },
+  clearState: {
+    flexDirection: 'row',
+  },
   clearButton: {
-    marginTop: 12,
-    alignItems: "center",
+    flex : 1,
+    flexBasis : 0,
+    width : '50%',
+    marginHorizontal: 16,
+    marginTop: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    backgroundColor: '#7C3AED',
+    alignItems: 'center',
   },
   clearText: {
-    fontSize: 11,
-    color: "#9ca3af",
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
 

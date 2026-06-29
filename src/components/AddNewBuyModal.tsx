@@ -80,7 +80,6 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
   useEffect(() => {
     if (props.visible && !props.editTransaction) {
       const eur = props.currencies.find((c) => c.currencyName === "EUR")?.uuid ?? props.currencies[0]?.uuid ?? "";
-      setForm({ ...emptyBuy(), currencyId: eur });
       setFetchedPrice(null);
       setAutoFilled(false);
     }

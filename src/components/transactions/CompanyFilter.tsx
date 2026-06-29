@@ -39,7 +39,7 @@ const CompanyFilter: React.FC<CompanyFilterProps> = (props) => {
           : <Ionicons name="business-outline" size={14} color="#4B5563" />
         }
         <Text style={[styles.triggerText, isSelected && styles.triggerTextActive]}>
-          {props.selected ?? 'All companies'}
+          {props.selected ? '': 'All companies'}
         </Text>
         {isSelected ? (
           <TouchableOpacity

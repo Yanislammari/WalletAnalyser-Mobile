@@ -36,6 +36,7 @@ const PortfolioDetail: React.FC = () => {
   const portfolioService = PortfolioService.getInstance();
   const currencyService = CurrencyService.getInstance();
 
+  const [openSummary, setOpenSummary] = useState(true)
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [loading, setLoading] = useState(true);
@@ -261,15 +262,22 @@ const PortfolioDetail: React.FC = () => {
             <Text style={TransactionStyle.subtitle}>Enter your transactions.</Text>
           </View>
         </View>
+
         <TouchableOpacity style={TransactionStyle.addButton} onPress={openModal}>
           <Ionicons name="add" size={15} color="#fff" />
           <Text style={TransactionStyle.addButtonText}>Add a row</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Portfolio Summary Card */}
       <View style={TransactionStyle.card}>
         <View style={TransactionStyle.cardHeader}>
+          <TouchableOpacity onPress={() => setOpenSummary(prev => !prev)} style={TransactionStyle.summaryToggle}>
+            <Ionicons
+              name={openSummary ? 'chevron-up' : 'chevron-down'}
+              size={20}
+              color="#fff"
+            />
+          </TouchableOpacity>
           <Text style={TransactionStyle.cardTitle}>Portfolio Summary</Text>
           {portfolio?.displayCurrencyName && (
             <View style={TransactionStyle.currencyBadge}>
@@ -278,54 +286,56 @@ const PortfolioDetail: React.FC = () => {
           )}
         </View>
 
-        {totalLoading ? (
-          <View style={TransactionStyle.grid}>
-            {[...Array(6)].map((_, i) => (
-              <View key={i} style={[TransactionStyle.summaryCell, { backgroundColor: '#F3F4F6' }]} />
-            ))}
-          </View>
-        ) : (
-          <View style={TransactionStyle.grid}>
-            <SummaryCell
-              label="Invested"
-              value={portfolioTotal ? fmt(portfolioTotal.totalInvested) : '—'}
-              currency={portfolioTotal?.currencyName}
-            />
-            <SummaryCell
-              label="Sells"
-              value={portfolioTotal ? fmt(portfolioTotal.totalSells) : '—'}
-              currency={portfolioTotal?.currencyName}
-            />
-            <SummaryCell
-              label="Dividends"
-              value={portfolioTotal ? fmt(portfolioTotal.totalDividends) : '—'}
-              currency={portfolioTotal?.currencyName}
-            />
-            <SummaryCell
-              label="Portfolio Value"
-              value={portfolioTotal ? fmt(portfolioTotal.portfolioMarketValue) : '—'}
-              currency={portfolioTotal?.currencyName}
-              valueColor="#1D4ED8"
-              bg="#EFF6FF"
-              note="Value of held positions"
-            />
-            <SummaryCell
-              label="Total Value"
-              value={portfolioTotal ? fmt(portfolioTotal.totalValue) : '—'}
-              currency={portfolioTotal?.currencyName}
-              valueColor="#7C3AED"
-              bg="#F5F3FF"
-              note="Portfolio value + Sells + Dividends"
-            />
-            <SummaryCell
-              label="Total P&L"
-              value={pnl != null ? (pnl >= 0 ? '+' : '') + fmt(pnl) : '—'}
-              currency={portfolioTotal?.currencyName}
-              valueColor={pnl != null && pnl >= 0 ? '#15803D' : '#DC2626'}
-              bg={pnl != null && pnl >= 0 ? '#F0FDF4' : '#FEF2F2'}
-              note="Including unrealized gains"
-            />
-          </View>
+        {openSummary && (
+          totalLoading ? (
+            <View style={TransactionStyle.grid}>
+              {[...Array(6)].map((_, i) => (
+                <View key={i} style={[TransactionStyle.summaryCell, { backgroundColor: '#F3F4F6' }]} />
+              ))}
+            </View>
+          ) : (
+            <View style={[TransactionStyle.grid,{paddingBottom : 16}]}>
+              <SummaryCell
+                label="Invested"
+                value={portfolioTotal ? fmt(portfolioTotal.totalInvested) : '—'}
+                currency={portfolioTotal?.currencyName}
+              />
+              <SummaryCell
+                label="Sells"
+                value={portfolioTotal ? fmt(portfolioTotal.totalSells) : '—'}
+                currency={portfolioTotal?.currencyName}
+              />
+              <SummaryCell
+                label="Dividends"
+                value={portfolioTotal ? fmt(portfolioTotal.totalDividends) : '—'}
+                currency={portfolioTotal?.currencyName}
+              />
+              <SummaryCell
+                label="Portfolio Value"
+                value={portfolioTotal ? fmt(portfolioTotal.portfolioMarketValue) : '—'}
+                currency={portfolioTotal?.currencyName}
+                valueColor="#1D4ED8"
+                bg="#EFF6FF"
+                note="Value of held positions"
+              />
+              <SummaryCell
+                label="Total Value"
+                value={portfolioTotal ? fmt(portfolioTotal.totalValue) : '—'}
+                currency={portfolioTotal?.currencyName}
+                valueColor="#7C3AED"
+                bg="#F5F3FF"
+                note="Portfolio value + Sells + Dividends"
+              />
+              <SummaryCell
+                label="Total P&L"
+                value={pnl != null ? (pnl >= 0 ? '+' : '') + fmt(pnl) : '—'}
+                currency={portfolioTotal?.currencyName}
+                valueColor={pnl != null && pnl >= 0 ? '#15803D' : '#DC2626'}
+                bg={pnl != null && pnl >= 0 ? '#F0FDF4' : '#FEF2F2'}
+                note="Including unrealized gains"
+              />
+            </View>
+          )
         )}
       </View>
 

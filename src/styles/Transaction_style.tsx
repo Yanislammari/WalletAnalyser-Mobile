@@ -24,16 +24,16 @@ export const TransactionStyle = StyleSheet.create({
   subtitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
   addButton: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 14, paddingVertical: 9,
+    paddingHorizontal: 16, paddingVertical: 9,
     backgroundColor: '#7C3AED', borderRadius: 12,
   },
   addButtonText: { color: '#fff', fontSize: 13, fontWeight: '600' },
-
-  // Card
+  summaryToggle: { backgroundColor : '#7C3AED', padding : 4, borderRadius : 8, opacity : 0.75 },
   card: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop : 16,
     borderWidth: 1,
     borderColor: '#F3F4F6',
     shadowColor: '#000',

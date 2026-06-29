@@ -6,6 +6,7 @@ import type { AssetSellResponse } from "../../responses/AssetSellResponse";
 import type { AssetDividendResponse } from "../../responses/AssetDividendResponse";
 import DeleteTransactionModal from "./DeleteTransactionModal";
 import CompanyLogo from "./CompanyLogo";
+import ModalDetail from "./ModalDetail";
 import { computeBuyAmount } from "../../utils/transactionSort";
 
 interface BuyRowProps {
@@ -37,6 +38,7 @@ type TransactionRowProps = BuyRowProps | SellRowProps | DividendRowProps;
 const TransactionRow: React.FC<TransactionRowProps> = (props) => {
   const [deleteVisible, setDeleteVisible] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
+  const [detailVisible, setDetailVisible] = useState(false);
 
   const handleDeleteClick = () => setDeleteVisible(true);
 
@@ -51,6 +53,11 @@ const TransactionRow: React.FC<TransactionRowProps> = (props) => {
     } finally {
       setDeleting(false);
     }
+  };
+
+  const formatBuyAmount = (row: AssetBuyResponse, cn: (id: string) => string): string => {
+    const amount = computeBuyAmount(row);
+    return amount != null ? `${parseFloat(amount.toFixed(2))} ${cn(row.buyCurrencyId)}` : "—";
   };
 
   const ActionButtons = ({ onEditClick }: { onEditClick: () => void }) => (
@@ -74,26 +81,30 @@ const TransactionRow: React.FC<TransactionRowProps> = (props) => {
     </View>
   );
 
-  const formatBuyAmount = (row: AssetBuyResponse, cn: (id: string) => string): string => {
-    const amount = computeBuyAmount(row);
-    return amount != null ? `${parseFloat(amount.toFixed(2))} ${cn(row.buyCurrencyId)}` : "—";
-  };
-
   if (props.variant === "buy") {
-    const { row, currencyName, onEdit } = props;
+    const { row, onEdit } = props;
     return (
       <>
-        <View style={styles.row}>
+        <TouchableOpacity style={styles.row} onPress={() => setDetailVisible(true)} activeOpacity={0.7}>
           <Text style={styles.cellText}>{row.buyDate}</Text>
           <View style={styles.companyCell}>
             {row.companyName && <CompanyLogo name={row.companyName} size={26} />}
-            <Text style={styles.companyName}>{row.companyName ?? "—"}</Text>
+            <Text style={styles.companyName} numberOfLines={1}>
+              {row.companyName ? row.companyName.slice(0, 6)+'.' : '—'}
+            </Text>
           </View>
-          <Text style={styles.cellText}>{row.assetBuyShare != null ? `${row.assetBuyShare}` : "—"}</Text>
-          <Text style={styles.cellText}>{row.assetBuyPricePerShare != null ? `${row.assetBuyPricePerShare}` : "—"}</Text>
-          <Text style={styles.cellBold}>{formatBuyAmount(row, currencyName)}</Text>
-          <ActionButtons onEditClick={() => onEdit(row)} />
-        </View>
+          <Text style={styles.cellBold}>{formatBuyAmount(row, props.currencyName)}</Text>
+        </TouchableOpacity>
+
+        <ModalDetail
+          detailVisible={detailVisible}
+          onClose={() => setDetailVisible(false)}
+          onEdit={(row) => { onEdit(row); }}
+          onDelete={() => { setDeleteVisible(true); }}
+          currencyName={props.currencyName}
+          row={row}
+        />
+
         <DeleteTransactionModal
           visible={deleteVisible}
           deleting={deleting}
@@ -203,6 +214,8 @@ const styles = StyleSheet.create({
   companyCell: {
     flexDirection: "row",
     alignItems: "center",
+    width : 100,
+    marginLeft : 16,
     gap: 8,
     flex: 2,
   },
@@ -220,6 +233,7 @@ const styles = StyleSheet.create({
   cellBold: {
     fontSize: 13,
     fontWeight: "600",
+    width : 100,
     color: "#111827",
     flex: 1,
   },
