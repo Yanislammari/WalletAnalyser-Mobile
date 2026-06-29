@@ -21,6 +21,8 @@ import AddCustomAssetModal from "./AddCustomAssetModal";
 import DateInput from "./transactions/DateInput";
 import { emptyDividend, type DividendForm } from "../forms/DividendForm";
 import { useAuth } from "../providers/AuthProvider";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import CurrencyPicker from "./picker/CurrencyPicker";
 
 interface Props {
   visible: boolean;
@@ -90,7 +92,6 @@ const AddNewDividendModal: React.FC<Props> = ({
   }, [editTransaction]);
 
   const reset = () => {
-    setForm(emptyDividend());
     setSaving(false);
   };
 
@@ -117,8 +118,6 @@ const AddNewDividendModal: React.FC<Props> = ({
             cashflowAmount: parseFloat(form.amount),
           }
         );
-
-        Alert.alert("Success", "Dividend updated");
       } else {
         result = await portfolioService.addAssetDividend({
           portfolioId,
@@ -127,14 +126,12 @@ const AddNewDividendModal: React.FC<Props> = ({
           cashflowDate: form.date,
           cashflowAmount: parseFloat(form.amount),
         });
-
-        Alert.alert("Success", "Dividend added");
       }
 
       onSuccess(result);
       handleClose();
     } catch {
-      Alert.alert("Error", "Failed to save dividend");
+      
     } finally {
       setSaving(false);
     }
@@ -192,26 +189,11 @@ const AddNewDividendModal: React.FC<Props> = ({
 
             {/* CURRENCY */}
             <Text style={styles.label}>Currency</Text>
-            <View style={styles.picker}>
-              <Picker
-                selectedValue={form.currencyId}
-                onValueChange={(v) =>
-                  setForm((f) => ({
-                    ...f,
-                    currencyId: v,
-                  }))
-                }
-              >
-                <Picker.Item label="Currency" value="" />
-                {currencies.map((c) => (
-                  <Picker.Item
-                    key={c.uuid}
-                    label={c.currencyName}
-                    value={c.uuid}
-                  />
-                ))}
-              </Picker>
-            </View>
+            <CurrencyPicker
+              currencies={currencies}
+              value={form.currencyId}
+              onChange={(v) => setForm((f) => ({ ...f, currencyId: v }))}
+            />
 
             {/* ACTIONS */}
             <View style={styles.row}>
@@ -299,7 +281,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 12,
-    overflow: "hidden",
+    height : 35,
+    overflow: "hidden"
   },
 
   row: {

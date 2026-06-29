@@ -34,24 +34,30 @@ const styles = StyleSheet.create({
   th: {
     paddingBottom: 12,
     paddingRight: 16,
+    alignItems: 'stretch',
   },
   inner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  innerActive: {
-    backgroundColor: "#f5f3ff",
-  },
-  innerInactive: {
-    backgroundColor: "transparent",
+    flex: 1,           // <-- fill the th
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft : 10,
+    paddingRight : 5,
+    paddingVertical: 4,
+    borderRadius: 10,
   },
   label: {
     fontSize: 13,
-    fontWeight: "500",
+    fontWeight: '500',
+    flex: 1,           // <-- text takes remaining space
+  },
+  innerInactive: {
+    backgroundColor: '#F3F4F6',
+    borderRadius : 10
+  },
+  innerActive: {
+    backgroundColor: '#EDE9FE',
+    borderRadius : 10
   },
   labelActive: {
     color: "#7c3aed",

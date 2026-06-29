@@ -6,8 +6,11 @@ import type { AssetSellResponse } from "../../responses/AssetSellResponse";
 import type { AssetDividendResponse } from "../../responses/AssetDividendResponse";
 import DeleteTransactionModal from "./DeleteTransactionModal";
 import CompanyLogo from "./CompanyLogo";
-import ModalDetail from "./ModalDetail";
+import ModalDetail from "./ModalDetailBuy";
 import { computeBuyAmount } from "../../utils/transactionSort";
+import ModalDetailBuy from "./ModalDetailBuy";
+import ModalDetailSell from "./ModalDetailSell";
+import ModalDetailDividend from "./ModalDetailDividend";
 
 interface BuyRowProps {
   variant: "buy";
@@ -124,28 +127,32 @@ const TransactionRow: React.FC<TransactionRowProps> = (props) => {
     const gain = row.assetSellGain;
     return (
       <>
-        <View style={styles.row}>
+        <TouchableOpacity style={styles.row} onPress={() => setDetailVisible(true)} activeOpacity={0.7}>
           <Text style={styles.cellText}>{row.sellDate}</Text>
           <View style={styles.companyCell}>
             {row.companyName && <CompanyLogo name={row.companyName} size={26} />}
-            <Text style={styles.companyName}>{row.companyName ?? "—"}</Text>
+            <Text style={styles.companyName} numberOfLines={1}>
+              {row.companyName ? row.companyName.slice(0, 6)+'.' : '—'}
+            </Text>
           </View>
-          <Text style={styles.cellText}>{row.assetSellShare != null ? row.assetSellShare : "—"}</Text>
-          <Text style={styles.cellText}>
-            {sellPricePerShare != null ? `${sellPricePerShare} ${currencyName(row.sellCurrencyId)}` : "—"}
-          </Text>
-          <Text style={styles.cellText}>
-            {row.assetSellAmount != null ? `${parseFloat(row.assetSellAmount.toFixed(2))} ${currencyName(row.sellCurrencyId)}` : "—"}
-          </Text>
           {gain != null ? (
-            <Text style={[styles.cellBold, gain >= 0 ? styles.gainPositive : styles.gainNegative]}>
+            <Text style={[styles.cellBold, gain >= 0 ? styles.gainPositive : styles.gainNegative, {marginLeft : -25}]}>
               {gain >= 0 ? "+" : ""}{gain} {currencyName(row.sellCurrencyId)}
             </Text>
           ) : (
             <Text style={styles.cellText}>—</Text>
           )}
-          <ActionButtons onEditClick={() => onEdit(row)} />
-        </View>
+        </TouchableOpacity>
+
+        <ModalDetailSell
+          detailVisible={detailVisible}
+          onClose={() => setDetailVisible(false)}
+          onEdit={(row) => { onEdit(row); }}
+          onDelete={() => { setDeleteVisible(true); }}
+          currencyName={props.currencyName}
+          row={row}
+        />
+
         <DeleteTransactionModal
           visible={deleteVisible}
           deleting={deleting}
@@ -161,33 +168,28 @@ const TransactionRow: React.FC<TransactionRowProps> = (props) => {
   const isUpcoming = row.cashflowDate > today;
   return (
     <>
-      <View style={[styles.row, isUpcoming && styles.rowUpcoming]}>
-        <View style={styles.dateCell}>
-          <Text style={styles.cellText}>{row.cashflowDate}</Text>
-          {isUpcoming && (
-            <View style={styles.upcomingBadge}>
-              <Text style={styles.upcomingBadgeText}>Upcoming</Text>
-            </View>
-          )}
-        </View>
+      <TouchableOpacity style={styles.row} onPress={() => setDetailVisible(true)} activeOpacity={0.7}>
+        <Text style={styles.cellText}>{row.cashflowDate}</Text>
         <View style={styles.companyCell}>
-          {row.companyName ? (
-            <>
-              <CompanyLogo name={row.companyName} size={26} />
-              <Text style={[styles.companyName, isUpcoming && styles.companyNameUpcoming]}>
-                {row.companyName}
-              </Text>
-            </>
-          ) : (
-            <Text style={styles.cellMuted}>—</Text>
-          )}
+          {row.companyName && <CompanyLogo name={row.companyName} size={26} />}
+          <Text style={styles.companyName} numberOfLines={1}>
+            {row.companyName ? row.companyName.slice(0, 6)+'.' : '—'}
+          </Text>
         </View>
         <Text style={[styles.cellBold, isUpcoming ? styles.cellMuted : styles.amountText]}>
-          {row.cashflowAmount}
+          {row.cashflowAmount} {currencyName(row.currencyId)}
         </Text>
-        <Text style={styles.cellText}>{currencyName(row.currencyId)}</Text>
-        <ActionButtons onEditClick={() => onEdit(row)} />
-      </View>
+      </TouchableOpacity>
+
+      <ModalDetailDividend
+        detailVisible={detailVisible}
+        onClose={() => setDetailVisible(false)}
+        onEdit={(row) => { onEdit(row); }}
+        onDelete={() => { setDeleteVisible(true); }}
+        currencyName={props.currencyName}
+        row={row}
+      />
+
       <DeleteTransactionModal
         visible={deleteVisible}
         deleting={deleting}

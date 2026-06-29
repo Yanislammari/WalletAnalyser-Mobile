@@ -1,34 +1,29 @@
 import { Modal, Pressable, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import CompanyLogo from "./CompanyLogo";
-import { AssetBuyResponse } from "../../responses/AssetBuyResponse";
-import { computeBuyAmount } from "../../utils/transactionSort";
-import { useState } from "react";
+import { AssetDividendResponse } from "../../responses/AssetDividendResponse";
 
 interface Props {
-  detailVisible : boolean,
-  onClose : () => void,
-  row : AssetBuyResponse,
-  currencyName: (id: string) => string,
-  onEdit: (row: AssetBuyResponse) => void,
+  detailVisible: boolean;
+  onClose: () => void;
+  row: AssetDividendResponse;
+  currencyName: (id: string) => string;
+  onEdit: (row: AssetDividendResponse) => void;
   onDelete: () => void;
 }
 
-const ModalDetail : React.FC<Props> = (props) => {
-  const formatBuyAmount = (row: AssetBuyResponse, cn: (id: string) => string): string => {
-    const amount = computeBuyAmount(row);
-    return amount != null ? `${parseFloat(amount.toFixed(2))} ${cn(row.buyCurrencyId)}` : "—";
-  };
+const ModalDetailDividend: React.FC<Props> = (props) => {
+  const row = props.row;
+  const cn = props.currencyName(row.currencyId);
 
-  const row = props.row
   return (
-  <Modal
+    <Modal
       visible={props.detailVisible}
       transparent
       animationType="slide"
-      onRequestClose={() => props.onClose()}
+      onRequestClose={props.onClose}
     >
-      <Pressable style={styles.backdrop} onPress={() => props.onClose()}>
+      <Pressable style={styles.backdrop} onPress={props.onClose}>
         <Pressable style={styles.sheet} onPress={() => {}}>
           <View style={styles.dragHandle} />
 
@@ -44,20 +39,12 @@ const ModalDetail : React.FC<Props> = (props) => {
           <View style={styles.infoGrid}>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Date</Text>
-              <Text style={styles.infoValue}>{row.buyDate ?? '—'}</Text>
+              <Text style={styles.infoValue}>{row.cashflowDate ?? '—'}</Text>
             </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Shares</Text>
-              <Text style={styles.infoValue}>{row.assetBuyShare ?? '—'}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Price / Share</Text>
-              <Text style={styles.infoValue}>{row.assetBuyPricePerShare ?? '—'}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Total Amount</Text>
-              <Text style={[styles.infoValue, { fontWeight: '700', color: '#1D4ED8' }]}>
-                {formatBuyAmount(row, props.currencyName)}
+            <View style={[styles.infoRow, { backgroundColor: '#F0FDF4', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6 }]}>
+              <Text style={styles.infoLabel}>Amount</Text>
+              <Text style={[styles.infoValue, { color: '#15803D', fontWeight: '700' }]}>
+                {`+${parseFloat(row.cashflowAmount.toFixed(2))} ${cn}`}
               </Text>
             </View>
           </View>
@@ -69,9 +56,7 @@ const ModalDetail : React.FC<Props> = (props) => {
             <TouchableOpacity
               style={styles.editButton}
               activeOpacity={0.7}
-              onPress={() => {
-                props.onEdit(row);
-              }}
+              onPress={() => props.onEdit(row)}
             >
               <Ionicons name="pencil-outline" size={15} color="#7C3AED" />
               <Text style={styles.editText}>Edit</Text>
@@ -80,9 +65,7 @@ const ModalDetail : React.FC<Props> = (props) => {
             <TouchableOpacity
               style={styles.deleteButton}
               activeOpacity={0.7}
-              onPress={() => {
-                props.onDelete();
-              }}
+              onPress={props.onDelete}
             >
               <Ionicons name="trash-outline" size={15} color="#DC2626" />
               <Text style={styles.deleteText}>Delete</Text>
@@ -91,8 +74,8 @@ const ModalDetail : React.FC<Props> = (props) => {
         </Pressable>
       </Pressable>
     </Modal>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   backdrop: {
@@ -200,4 +183,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ModalDetail;
+export default ModalDetailDividend;

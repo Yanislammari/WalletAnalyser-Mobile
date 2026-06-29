@@ -21,7 +21,7 @@ interface AssetSearchSelectProps {
   onAddCustomAsset?: () => void;
 }
 
-const AssetSearchSelect: React.FC<AssetSearchSelectProps> = ({
+const AddAssetSearchSelect: React.FC<AssetSearchSelectProps> = ({
   assets,
   value,
   onChange,
@@ -102,25 +102,16 @@ const AssetSearchSelect: React.FC<AssetSearchSelectProps> = ({
 
   return (
     <View ref={containerRef}>
-      <TextInput
-        style={styles.input}
-        placeholder={
-          open
-            ? placeholder
-            : selectedAsset
-              ? displayName(selectedAsset)
-              : placeholder
-        }
-        value={
-          open
-            ? query
-            : selectedAsset
-              ? displayName(selectedAsset)
-              : ""
-        }
-        onChangeText={handleInputChange}
-        onFocus={handleFocus}
-      />
+      <TouchableOpacity
+        style={[styles.input, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+        onPress={() => setOpen(true)}
+        activeOpacity={0.7}
+      >
+        <Text style={{ fontSize: 13, color: selectedAsset ? '#111827' : '#9ca3af' }}>
+          {selectedAsset ? displayName(selectedAsset) : placeholder}
+        </Text>
+        <Ionicons name="chevron-down-outline" size={13} color="#9ca3af" />
+      </TouchableOpacity>
 
       <Modal
         visible={open}
@@ -267,4 +258,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AssetSearchSelect;
+export default AddAssetSearchSelect;

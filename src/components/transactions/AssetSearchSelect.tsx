@@ -121,51 +121,16 @@ const AssetSearchSelect: React.FC<
 
   return (
     <View ref={containerRef}>
-      <TextInput
-        style={styles.input}
-        placeholder={
-          open
-            ? placeholder
-            : selectedAsset
-              ? displayName(
-                  selectedAsset
-                )
-              : placeholder
-        }
-        value={
-          open
-            ? query
-            : selectedAsset
-              ? displayName(
-                  selectedAsset
-                )
-              : ""
-        }
-        onFocus={() => {
-          setQuery("");
-          openDropdown();
-        }}
-        onChangeText={(
-          text
-        ) => {
-          setQuery(text);
-
-          if (
-            !open
-          ) {
-            openDropdown();
-          }
-
-          if (
-            text ===
-            ""
-          ) {
-            onChange(
-              ""
-            );
-          }
-        }}
-      />
+      <TouchableOpacity
+        style={[styles.input, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+        onPress={openDropdown}
+        activeOpacity={0.7}
+      >
+        <Text style={{ fontSize: 13, color: selectedAsset ? '#111827' : '#9ca3af' }}>
+          {selectedAsset ? displayName(selectedAsset) : placeholder}
+        </Text>
+        <Ionicons name="chevron-down-outline" size={13} color="#9ca3af" />
+      </TouchableOpacity>
 
       <Modal
         visible={

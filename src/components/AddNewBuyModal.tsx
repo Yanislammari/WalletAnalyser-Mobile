@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   ScrollView,
   StyleSheet,
+  Keyboard,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import type { Currency } from "../models/Currency";
@@ -16,7 +17,6 @@ import type { Asset } from "../models/Asset";
 import type { AssetBuyResponse } from "../responses/AssetBuyResponse";
 import InputModeToggle from "./transactions/InputModeToggle";
 import DateInput from "./transactions/DateInput";
-import AssetSearchSelect from "./transactions/AddSearchSelect";
 import AddCustomAssetModal from "./AddCustomAssetModal";
 import PortfolioService from "../services/PortfolioService";
 import AssetService from "../services/AssetService";
@@ -25,6 +25,9 @@ import { emptyBuy, type BuyForm } from "../forms/BuyForm";
 import { InputMode } from "../enums/InputMode";
 import type { AssetPriceResponse } from "../responses/AssetPriceResponse";
 import { useAuth } from "../providers/AuthProvider";
+import { toast } from "sonner-native";
+import AddAssetSearchSelect from "./transactions/AddSearchSelect";
+import CurrencyPicker from "./picker/CurrencyPicker";
 
 interface AddNewBuyModalProps {
   visible: boolean;
@@ -41,9 +44,10 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
   const [saving, setSaving] = useState<boolean>(false);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [priceLoading, setPriceLoading] = useState<boolean>(false);
-  const [fetchedPrice, setFetchedPrice] = useState<number | null>(null);
   const [autoFilled, setAutoFilled] = useState<boolean>(false);
+  const [notEnoughShare, setNotEnoughShare] = useState<boolean>(false)
   const [customAssetVisible, setCustomAssetVisible] = useState<boolean>(false);
+  const [baseFetchedPrice, setBaseFetchedPrice] = useState<number | null>(null);
   const skipNextPriceFetch = useRef(false);
   const portfolioService = PortfolioService.getInstance();
   const assetService = AssetService.getInstance();
@@ -72,7 +76,6 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
       shares: tx.assetBuyShare != null ? String(tx.assetBuyShare) : "",
       pricePerShare: tx.assetBuyPricePerShare != null ? String(tx.assetBuyPricePerShare) : "",
     });
-    setFetchedPrice(null);
     setAutoFilled(false);
   }, [props.editTransaction]);
 
@@ -80,7 +83,6 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
   useEffect(() => {
     if (props.visible && !props.editTransaction) {
       const eur = props.currencies.find((c) => c.currencyName === "EUR")?.uuid ?? props.currencies[0]?.uuid ?? "";
-      setFetchedPrice(null);
       setAutoFilled(false);
     }
   }, [props.visible]);
@@ -93,20 +95,22 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
   }, [props.currencies, isEditMode]);
 
   useEffect(() => {
-    if (!form.assetId || !form.date) { setFetchedPrice(null); return; }
+    if (!form.assetId || !form.date) { setBaseFetchedPrice(null); return; }
     if (skipNextPriceFetch.current) { skipNextPriceFetch.current = false; return; }
     let cancelled = false;
     setPriceLoading(true);
     setAutoFilled(false);
     assetService.getAssetPrice(form.assetId, form.date)
-      .then((r: AssetPriceResponse | null) => { if (!cancelled) setFetchedPrice(r?.price ?? null); })
+      .then((r: AssetPriceResponse | null) => {
+        if (!cancelled) setBaseFetchedPrice(r?.price ?? null);
+      })
       .catch(() => {})
       .finally(() => { if (!cancelled) setPriceLoading(false); });
     return () => { cancelled = true; };
   }, [form.assetId, form.date]);
 
   useEffect(() => {
-    if (fetchedPrice == null || !form.currencyId) return;
+    if (baseFetchedPrice == null || !form.currencyId) return;
     const sel = assets.find((a) => a.id === form.assetId);
     const baseCcy = props.currencies.find((c) => c.uuid === sel?.baseCurrencyId)?.currencyName;
     const tgtCcy = props.currencies.find((c) => c.uuid === form.currencyId)?.currencyName;
@@ -114,18 +118,18 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
       setForm((f) => ({ ...f, pricePerShare: String(parseFloat(price.toFixed(4))) }));
       setAutoFilled(true);
     };
-    if (!baseCcy || !tgtCcy || baseCcy === tgtCcy) { apply(fetchedPrice); return; }
+    if (!baseCcy || !tgtCcy || baseCcy === tgtCcy) { apply(baseFetchedPrice); return; }
     let cancelled = false;
     setPriceLoading(true);
-    currencyService.convertPrice(baseCcy, tgtCcy, fetchedPrice)
+    currencyService.convertPrice(baseCcy, tgtCcy, baseFetchedPrice)
       .then((v) => { if (!cancelled) apply(v); })
-      .catch(() => { if (!cancelled) apply(fetchedPrice); })
+      .catch(() => { if (!cancelled) apply(baseFetchedPrice); })
       .finally(() => { if (!cancelled) setPriceLoading(false); });
     return () => { cancelled = true; };
-  }, [fetchedPrice, form.currencyId, form.assetId]);
+  }, [baseFetchedPrice, form.currencyId, form.assetId]);
 
   const handleSave = async () => {
-    if (!form.date || !props.portfolioId || !form.currencyId) return;
+    if (!form.date || !props.portfolioId || !form.currencyId ) return;
     const isAmtMode = form.inputMode === InputMode.AMOUNT;
     const pricePerShare = form.pricePerShare ? parseFloat(form.pricePerShare) : undefined;
     const shares = isAmtMode
@@ -135,6 +139,7 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
       ? (form.amount ? parseFloat(form.amount) : undefined)
       : (shares && pricePerShare ? parseFloat((shares * pricePerShare).toFixed(2)) : undefined);
     setSaving(true);
+    setNotEnoughShare(false);
     try {
       let result: AssetBuyResponse;
       if (isEditMode && props.editTransaction) {
@@ -158,9 +163,14 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
       }
       props.onSuccess(result);
       props.onClose();
-    } catch (err: unknown) {
-      // Replace with your RN toast/snackbar solution
-      console.error(err);
+    } catch (err: any) {
+      if(err.message.includes("SHARES")){
+        setNotEnoughShare(true)
+      }
+      else{
+        toast.error("An unexpected error occured. Please try again later")
+        console.error(err);
+      }
     } finally {
       setSaving(false);
     }
@@ -200,8 +210,14 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
         visible={props.visible}
         transparent
         animationType="slide"
-        onRequestClose={props.onClose}
-      >
+        onRequestClose={() => {
+            if (Keyboard.isVisible()) {
+              Keyboard.dismiss();
+            } else {
+              props.onClose();
+            }
+          }}
+        >
         <Pressable style={styles.backdrop} onPress={props.onClose}>
           <Pressable style={styles.box} onPress={() => {}}>
             <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
@@ -240,7 +256,7 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
                 {!isEditMode && (
                   <View>
                     <Text style={styles.label}>Asset</Text>
-                    <AssetSearchSelect
+                    <AddAssetSearchSelect
                       assets={assets}
                       value={form.assetId}
                       onChange={(assetId) => setForm((f) => ({ ...f, assetId }))}
@@ -268,6 +284,9 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
                 {isAmountMode ? (
                   <>
                     {/* Amount + Currency */}
+                    {notEnoughShare && 
+                      <Text style={styles.errorText}>Not enough share to cover all your selling position</Text>
+                    }
                     <View style={styles.row}>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.label}>Total amount</Text>
@@ -313,6 +332,9 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
                 ) : (
                   <>
                     {/* Shares */}
+                    {notEnoughShare && 
+                      <Text style={styles.errorText}>Not enough share to cover all your selling position</Text>
+                    }
                     <View>
                       <Text style={styles.label}>Number of shares</Text>
                       <TextInput
@@ -394,50 +416,6 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
           setCustomAssetVisible(false);
         }}
       />
-    </>
-  );
-};
-
-// Inline currency picker — replace with a proper RN picker/modal if preferred
-const CurrencyPicker: React.FC<{
-  currencies: Currency[];
-  value: string;
-  onChange: (v: string) => void;
-}> = ({ currencies, value, onChange }) => {
-  const [open, setOpen] = useState(false);
-  const selected = currencies.find((c) => c.uuid === value);
-  return (
-    <>
-      <TouchableOpacity
-        style={[styles.input, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}
-        onPress={() => setOpen(true)}
-        activeOpacity={0.7}
-      >
-        <Text style={{ fontSize: 13, color: selected ? "#111827" : "#9ca3af" }}>
-          {selected?.currencyName ?? "Currency"}
-        </Text>
-        <Ionicons name="chevron-down-outline" size={13} color="#9ca3af" />
-      </TouchableOpacity>
-      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
-          <Pressable style={[styles.box, { maxHeight: 320 }]} onPress={() => {}}>
-            <ScrollView>
-              {currencies.map((c) => (
-                <TouchableOpacity
-                  key={c.uuid}
-                  onPress={() => { onChange(c.uuid); setOpen(false); }}
-                  style={styles.pickerOption}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.pickerOptionText, c.uuid === value && styles.pickerOptionActive]}>
-                    {c.currencyName}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
     </>
   );
 };
@@ -587,19 +565,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#fff",
   },
-  pickerOption: {
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f3f4f6",
-  },
-  pickerOptionText: {
-    fontSize: 14,
-    color: "#374151",
-  },
-  pickerOptionActive: {
-    color: "#7c3aed",
-    fontWeight: "600",
+  errorText: {
+    fontSize: 11,
+    color: "#ef4444",
+    marginTop: 4,
   },
 });
 

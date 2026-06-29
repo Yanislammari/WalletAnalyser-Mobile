@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   ScrollView,
   StyleSheet,
+  Keyboard,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import type { Currency } from "../models/Currency";
@@ -23,6 +24,7 @@ import { emptySell, type SellForm } from "../forms/SellForm";
 import type { AssetPriceResponse } from "../responses/AssetPriceResponse";
 import { InputMode } from "../enums/InputMode";
 import { useAuth } from "../providers/AuthProvider";
+import CurrencyPicker from "./picker/CurrencyPicker";
 
 interface AddNewSellModalProps {
   visible: boolean;
@@ -40,11 +42,11 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
   const [saving, setSaving] = useState<boolean>(false);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [priceLoading, setPriceLoading] = useState<boolean>(false);
-  const [fetchedPrice, setFetchedPrice] = useState<number | null>(null);
   const [autoFilled, setAutoFilled] = useState<boolean>(false);
   const [availableShares, setAvailableShares] = useState<number | null>(null);
   const [availableSharesLoading, setAvailableSharesLoading] = useState<boolean>(false);
   const [avgBuyPrice, setAvgBuyPrice] = useState<number | null>(null);
+  const [baseFetchedPrice, setBaseFetchedPrice] = useState<number | null>(null);
   const portfolioService = PortfolioService.getInstance();
   const assetService = AssetService.getInstance();
   const currencyService = CurrencyService.getInstance();
@@ -57,6 +59,19 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
     assetService.getAssets().then(setAssets).catch(() => setAssets([]));
   }, []);
 
+  useEffect(() => {
+    if (!props.visible || !form.assetId || !form.date) { 
+      setAvailableShares(null); 
+      return; 
+    }
+    let cancelled = false;
+    setAvailableSharesLoading(true);
+    portfolioService.getAvailableShares(props.portfolioId, form.assetId, form.date)
+      .then((n) => { if (!cancelled) setAvailableShares(n); })
+      .catch(() => { if (!cancelled) setAvailableShares(null); })
+      .finally(() => { if (!cancelled) setAvailableSharesLoading(false); });
+    return () => { cancelled = true; };
+  }, [form.assetId, form.date, props.visible]);
   // Pre-fill form in edit mode
   useEffect(() => {
     if (!props.editTransaction) return;
@@ -74,7 +89,10 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
       capitalGain: tx.assetSellGain != null ? String(tx.assetSellGain) : "",
       gainCurrencyId: tx.sellCurrencyId,
     });
-    setFetchedPrice(null);
+    const derivedPrice = (tx.assetSellAmount != null && tx.assetSellShare != null && tx.assetSellShare > 0)
+      ? parseFloat((tx.assetSellAmount / tx.assetSellShare).toFixed(4))
+      : null;
+    setBaseFetchedPrice(derivedPrice);
     setAutoFilled(false);
     setAvailableShares(null);
     setAvgBuyPrice(null);
@@ -83,9 +101,6 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
   // Reset form when opening in add mode
   useEffect(() => {
     if (props.visible && !props.editTransaction) {
-      const eur = props.currencies.find((c) => c.currencyName === "EUR")?.uuid ?? props.currencies[0]?.uuid ?? "";
-      setForm({ ...emptySell(), currencyId: eur });
-      setFetchedPrice(null);
       setAutoFilled(false);
       setAvailableShares(null);
       setAvgBuyPrice(null);
@@ -99,18 +114,6 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
     }
   }, [props.currencies, isEditMode]);
 
-  // Available shares
-  useEffect(() => {
-    if (!form.assetId || !form.date) { setAvailableShares(null); return; }
-    let cancelled = false;
-    setAvailableSharesLoading(true);
-    portfolioService.getAvailableShares(props.portfolioId, form.assetId, form.date)
-      .then((n) => { if (!cancelled) setAvailableShares(n); })
-      .catch(() => { if (!cancelled) setAvailableShares(null); })
-      .finally(() => { if (!cancelled) setAvailableSharesLoading(false); });
-    return () => { cancelled = true; };
-  }, [form.assetId, form.date]);
-
   // Average buy price
   useEffect(() => {
     if (!form.assetId || !form.date || !form.currencyId) { setAvgBuyPrice(null); return; }
@@ -123,19 +126,19 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
 
   // Auto-fill price from Yahoo
   useEffect(() => {
-    if (isEditMode || !form.assetId || !form.date) { setFetchedPrice(null); return; }
+    if (!form.assetId || !form.date) { setBaseFetchedPrice(null); return; }
     let cancelled = false;
     setPriceLoading(true);
     setAutoFilled(false);
     assetService.getAssetPrice(form.assetId, form.date)
-      .then((r: AssetPriceResponse | null) => { if (!cancelled) setFetchedPrice(r?.price ?? null); })
+      .then((r: AssetPriceResponse | null) => { if (!cancelled) setBaseFetchedPrice(r?.price ?? null); })
       .catch(() => {})
       .finally(() => { if (!cancelled) setPriceLoading(false); });
     return () => { cancelled = true; };
   }, [form.assetId, form.date, isEditMode]);
 
   useEffect(() => {
-    if (fetchedPrice == null || !form.currencyId) return;
+    if (baseFetchedPrice  == null || !form.currencyId) return;
     const sel = assets.find((a) => a.id === form.assetId);
     const baseCcy = props.currencies.find((c) => c.uuid === sel?.baseCurrencyId)?.currencyName;
     const tgtCcy = props.currencies.find((c) => c.uuid === form.currencyId)?.currencyName;
@@ -143,15 +146,15 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
       setForm((f) => ({ ...f, pricePerShare: String(parseFloat(price.toFixed(4))) }));
       setAutoFilled(true);
     };
-    if (!baseCcy || !tgtCcy || baseCcy === tgtCcy) { apply(fetchedPrice); return; }
+    if (!baseCcy || !tgtCcy || baseCcy === tgtCcy) { apply(baseFetchedPrice ); return; }
     let cancelled = false;
     setPriceLoading(true);
-    currencyService.convertPrice(baseCcy, tgtCcy, fetchedPrice)
+    currencyService.convertPrice(baseCcy, tgtCcy, baseFetchedPrice )
       .then((v) => { if (!cancelled) apply(v); })
-      .catch(() => { if (!cancelled) apply(fetchedPrice); })
+      .catch(() => { if (!cancelled) apply(baseFetchedPrice ); })
       .finally(() => { if (!cancelled) setPriceLoading(false); });
     return () => { cancelled = true; };
-  }, [fetchedPrice, form.currencyId, form.assetId]);
+  }, [baseFetchedPrice, form.currencyId, form.assetId]);
 
   // Auto-compute capital gain
   useEffect(() => {
@@ -229,8 +232,14 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
       visible={props.visible}
       transparent
       animationType="slide"
-      onRequestClose={props.onClose}
-    >
+      onRequestClose={() => {
+          if (Keyboard.isVisible()) {
+            Keyboard.dismiss();
+          } else {
+            props.onClose();
+          }
+        }}
+      >
       <Pressable style={styles.backdrop} onPress={props.onClose}>
         <Pressable style={styles.box} onPress={() => {}}>
           <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
@@ -427,50 +436,6 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
         </Pressable>
       </Pressable>
     </Modal>
-  );
-};
-
-// Inline currency picker — same pattern as AddNewBuyModal
-const CurrencyPicker: React.FC<{
-  currencies: Currency[];
-  value: string;
-  onChange: (v: string) => void;
-}> = ({ currencies, value, onChange }) => {
-  const [open, setOpen] = useState(false);
-  const selected = currencies.find((c) => c.uuid === value);
-  return (
-    <>
-      <TouchableOpacity
-        style={[styles.input, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}
-        onPress={() => setOpen(true)}
-        activeOpacity={0.7}
-      >
-        <Text style={{ fontSize: 13, color: selected ? "#111827" : "#9ca3af" }}>
-          {selected?.currencyName ?? "Currency"}
-        </Text>
-        <Ionicons name="chevron-down-outline" size={13} color="#9ca3af" />
-      </TouchableOpacity>
-      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
-          <Pressable style={[styles.box, { maxHeight: 320 }]} onPress={() => {}}>
-            <ScrollView>
-              {currencies.map((c) => (
-                <TouchableOpacity
-                  key={c.uuid}
-                  onPress={() => { onChange(c.uuid); setOpen(false); }}
-                  style={styles.pickerOption}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.pickerOptionText, c.uuid === value && styles.pickerOptionActive]}>
-                    {c.currencyName}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
-    </>
   );
 };
 
@@ -673,20 +638,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: "#fff",
-  },
-  pickerOption: {
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f3f4f6",
-  },
-  pickerOptionText: {
-    fontSize: 14,
-    color: "#374151",
-  },
-  pickerOptionActive: {
-    color: "#7c3aed",
-    fontWeight: "600",
   },
 });
 
