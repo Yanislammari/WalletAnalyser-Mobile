@@ -72,13 +72,13 @@ export const StocksDetail: React.FC<RankedProps> = (rankAssetProps) => {
 
   const handleTagClick = (type: RankingType, position: number, id: string | number | undefined) => {
     if (!id && id !== 0) {
-      toast.info("You can't access this")
+      toast.info("You can't access this");
       return;
     }
     navigation.navigate("AnalysisDetail", { id, type, offset: position });
   };
 
-  const tags = [
+  const allTags = [
     {
       type: RankingType.COUNTRIES,
       label: rankAsset?.asset?.country?.country_name ?? "Unknown",
@@ -102,41 +102,51 @@ export const StocksDetail: React.FC<RankedProps> = (rankAssetProps) => {
     },
   ];
 
+  // Le mainRank est déjà affiché dans topOrBottom, donc on l'exclut des tags
+  const mainTag = allTags.find((t) => t.type === rankAssetProps.mainRank);
+  const tags = allTags.filter((t) => t.type !== rankAssetProps.mainRank);
+
+  const handleMainRankClick = () => {
+    if (!mainTag) return;
+    handleTagClick(mainTag.type, mainTag.pos ?? 0, mainTag.id);
+  };
+
   return (
-    <View
-      style={[
-        styles.row,
-        isPositive ? styles.rowPositive : styles.rowNegative,
-      ]}
-    >
-      {/* Position badge */}
-      <View
-        style={[
-          styles.badge,
-          { backgroundColor: isPositive ? "#BBF7D0" : "#FECACA" },
-        ]}
+    <View style={[styles.container, isPositive ? styles.rowPositive : styles.rowNegative]}>
+
+      {/* Top line: badge + name + perf, cliquable vers le mainRank */}
+      <Pressable
+        onPress={handleMainRankClick}
+        style={({ pressed }) => [styles.topRow, pressed && styles.topRowPressed]}
       >
-        <Text style={[styles.badgeText, { color: isPositive ? "#14532D" : "#7F1D1D" }]}>
-          {value === -1 ? "#" : value}
-        </Text>
-      </View>
+        <View style={[styles.badge, { backgroundColor: isPositive ? "#BBF7D0" : "#FECACA" }]}>
+          <Text style={[styles.badgeText, { color: isPositive ? "#14532D" : "#7F1D1D" }]}>
+            {value === -1 ? "#" : value}
+          </Text>
+        </View>
 
-      {/* Name + percentile */}
-      <View style={styles.infoBlock}>
-        <Text style={styles.name} numberOfLines={1}>
-          {displayName} ({rankAsset.asset.ticker_name ?? ""})
-        </Text>
-        <Text style={styles.subLabel} numberOfLines={1}>
-          {topOrBottom} {getMainLabel(rankAsset, rankAssetProps.mainRank)}
-        </Text>
-      </View>
+        <View style={styles.infoBlock}>
+          <Text style={styles.name} numberOfLines={1}>
+            {displayName} ({rankAsset.asset.ticker_name ?? ""})
+          </Text>
+          <Text style={styles.subLabel} numberOfLines={1}>
+            {topOrBottom} {getMainLabel(rankAsset, rankAssetProps.mainRank)}
+          </Text>
+        </View>
 
-      {/* Tags: country / sector / cluster, each with name + rank */}
+        <Text style={[styles.perf, { color: isPositive ? "#166534" : "#991B1B" }]}>
+          {isPositive ? "+" : ""}
+          {perf.toFixed(1)}%
+        </Text>
+      </Pressable>
+
+      {/* Bottom line: les 2 tags restants, un peu plus hauts */}
       <View style={styles.tagsRow}>
         {tags.map((tag, i) => (
           <Pressable
             key={i}
             onPress={() => handleTagClick(tag.type as RankingType, tag.pos ?? 0, tag.id)}
+            hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
             style={({ pressed }) => [styles.tag, pressed && styles.tagPressed]}
           >
             <Text style={styles.tagLabel} numberOfLines={1}>
@@ -146,12 +156,6 @@ export const StocksDetail: React.FC<RankedProps> = (rankAssetProps) => {
           </Pressable>
         ))}
       </View>
-
-      {/* Perf */}
-      <Text style={[styles.perf, { color: isPositive ? "#166534" : "#991B1B" }]}>
-        {isPositive ? "+" : ""}
-        {perf.toFixed(1)}%
-      </Text>
     </View>
   );
 };
@@ -177,38 +181,51 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   badgeText: { fontSize: 13, fontWeight: "500" },
-
-  infoBlock: { flex: 1, minWidth: 0 },
-  name: { fontSize: 14, fontWeight: "500", color: "#18181B" },
-  subLabel: { fontSize: 12, color: "#A1A1AA", marginTop: 2 },
-
-  tagsRow: {
+  container: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    gap: 8,
+  },
+  topRow: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 10,
+  },
+  topRowPressed: {
+    opacity: 0.7, // feedback visuel au clic sur toute la ligne
+  },
+  infoBlock: {
+    flex: 1, // takes remaining space between badge and perf
+  },
+  name: { fontSize: 14, fontWeight: "500", color: "#18181B" },
+  subLabel: { fontSize: 12, color: "#A1A1AA", marginTop: 2 },
+  tagsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
   },
   tag: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "baseline",
-    justifyContent: "center",
+    alignItems: "center",
     gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "#E4E4E7",
-    backgroundColor: "white",
-    width: 100,
+    paddingHorizontal: 12,
+    paddingVertical: 8, // plus de hauteur (était 4)
+    borderRadius: 8,
+    backgroundColor: "#F3F4F6",
+    maxWidth: "48%",
   },
-  tagPressed: { backgroundColor: "#F4F4F5", borderColor: "#D4D4D8" },
+  tagPressed: {
+    backgroundColor: "#E5E7EB",
+    transform: [{ scale: 0.97 }],
+  },
   tagLabel: { fontSize: 11, color: "#000000", maxWidth: "100%" },
   tagRank: { fontSize: 10, color: "#A1A1AA" },
-
   perf: {
     fontSize: 14,
     fontWeight: "500",
     fontVariant: ["tabular-nums"],
     flexShrink: 0,
   },
+  
 });

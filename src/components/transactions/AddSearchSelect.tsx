@@ -104,7 +104,7 @@ const AddAssetSearchSelect: React.FC<AssetSearchSelectProps> = ({
     <View ref={containerRef}>
       <TouchableOpacity
         style={[styles.input, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
-        onPress={() => setOpen(true)}
+        onPress={openDropdown}
         activeOpacity={0.7}
       >
         <Text style={{ fontSize: 13, color: selectedAsset ? '#111827' : '#9ca3af' }}>

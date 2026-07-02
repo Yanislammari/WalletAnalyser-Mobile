@@ -71,7 +71,8 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
       .catch(() => { if (!cancelled) setAvailableShares(null); })
       .finally(() => { if (!cancelled) setAvailableSharesLoading(false); });
     return () => { cancelled = true; };
-  }, [form.assetId, form.date, props.visible]);
+  }, [form.assetId, form.date, props.visible, props.editTransaction]);
+
   // Pre-fill form in edit mode
   useEffect(() => {
     if (!props.editTransaction) return;
@@ -97,15 +98,6 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
     setAvailableShares(null);
     setAvgBuyPrice(null);
   }, [props.editTransaction]);
-
-  // Reset form when opening in add mode
-  useEffect(() => {
-    if (props.visible && !props.editTransaction) {
-      setAutoFilled(false);
-      setAvailableShares(null);
-      setAvgBuyPrice(null);
-    }
-  }, [props.visible]);
 
   useEffect(() => {
     if (!isEditMode && props.currencies.length > 0) {
@@ -193,7 +185,6 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
       props.onSuccess(result);
       props.onClose();
     } catch (err: unknown) {
-      // Replace with your RN toast/snackbar solution
       if (err instanceof Error && err.message === "INSUFFICIENT_SHARES") {
         console.error("Not enough shares at this date.");
       } else {

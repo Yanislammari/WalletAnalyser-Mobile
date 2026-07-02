@@ -132,13 +132,13 @@ const CardSectorPerf = (sector: SectorCardDataProps) => {
             <Text style={styles.sectionLabel}>Worst performers</Text>
             <PerformerRow performers={sector.worst} />
           </View>
-          <View style={styles.footer}>
+          <View style={[styles.footer,styles.iconBadge]}>
             <Pressable
               style={({ pressed }) => [styles.seeMoreButton, pressed && styles.seeMoreButtonPressed]}
               onPress={sector.onClick}
             >
-              <Text style={styles.seeMoreText}>See more</Text>
-              <Icon name="arrow-right" size={14} color="#52525B" />
+              <Text style={styles.seeMoreText}>View more</Text>
+              <Icon name="arrow-forward" size={14} color="#52525B" />
             </Pressable>
           </View>
         </>
@@ -217,6 +217,15 @@ const styles = StyleSheet.create({
   },
   seeMoreButtonPressed: { backgroundColor: "#F4F4F5" },
   seeMoreText: { fontSize: 14, fontWeight: "500", color: "#52525B" },
+  iconBadge: {
+    backgroundColor: "#cfcfcf",
+    color: "#fff",
+    margin: 16,
+    alignItems: "flex-start",
+    justifyContent: "center",
+    borderRadius: 15,
+    paddingTop: 8,
+  },
 });
 
 export default CardSectorPerf;

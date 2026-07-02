@@ -79,14 +79,6 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
     setAutoFilled(false);
   }, [props.editTransaction]);
 
-  // Reset form when opening in add mode
-  useEffect(() => {
-    if (props.visible && !props.editTransaction) {
-      const eur = props.currencies.find((c) => c.currencyName === "EUR")?.uuid ?? props.currencies[0]?.uuid ?? "";
-      setAutoFilled(false);
-    }
-  }, [props.visible]);
-
   useEffect(() => {
     if (!isEditMode && props.currencies.length > 0) {
       const eur = props.currencies.find((c) => c.currencyName === "EUR")?.uuid ?? props.currencies[0].uuid;
@@ -96,7 +88,6 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
 
   useEffect(() => {
     if (!form.assetId || !form.date) { setBaseFetchedPrice(null); return; }
-    if (skipNextPriceFetch.current) { skipNextPriceFetch.current = false; return; }
     let cancelled = false;
     setPriceLoading(true);
     setAutoFilled(false);

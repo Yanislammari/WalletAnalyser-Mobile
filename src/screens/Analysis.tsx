@@ -14,15 +14,13 @@ import type { AssetRankingResponse } from "../responses/AssetAnalysisResponse";
 import { StocksDetail } from "../components/stock_analysis/StockDetail";
 import { RankingType } from "../enums/RankType";
 import Icon from "react-native-vector-icons/Ionicons";
+import ViewSelector, { ViewType } from "../components/modal/SelectView";
 
-// Root stack param list — adjust to match your actual navigator's typing.
 type RootStackParamList = {
   AnalysisDetail: { id: string; type: RankingType };
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
-type ViewType = "cluster" | "sector" | "my_stocks" | "countries";
 
 const Analysis: React.FC = () => {
   const analysisService = AnalysisService.getInstance();
@@ -176,13 +174,6 @@ const Analysis: React.FC = () => {
     p.asset.display_name?.toLowerCase()?.includes(search.toLowerCase())
   );
 
-  const tabs: { key: ViewType; label: string }[] = [
-    { key: "my_stocks", label: "My stocks" },
-    { key: "sector", label: "Sectors" },
-    { key: "countries", label: "Countries" },
-    { key: "cluster", label: "Group by characteristic" },
-  ];
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerRow}>
@@ -195,22 +186,7 @@ const Analysis: React.FC = () => {
         <SearchBar value={search} onChange={setSearch} placeholder="Search groups…" />
       </View>
 
-      <View style={styles.tabBar}>
-        {tabs.map((tab) => (
-          <Pressable
-            key={tab.key}
-            style={[styles.tabButton, view === tab.key && styles.tabButtonActive]}
-            onPress={() => setView(tab.key)}
-          >
-            <Text
-              style={[styles.tabButtonText, view === tab.key && styles.tabButtonTextActive]}
-              numberOfLines={1}
-            >
-              {tab.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <ViewSelector view={view} setView={setView} />
 
       {view === "my_stocks" &&
         (!selectedPortfolio || selectedPortfolio.id === "" ? (
@@ -307,9 +283,8 @@ const styles = StyleSheet.create({
   },
 
   grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 24,
+    flexDirection: "column",
+    gap: 12, // or use marginBottom on the card if `gap` isn't supported on your RN version
   },
 
   emptyText: {
@@ -319,6 +294,33 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
   },
   emptyTextFullWidth: { width: "100%" },
+    trigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start", // <- left-aligned instead of centered
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    gap: 6,
+    backgroundColor: "#f2f2f2",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  triggerText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#222",
+  },
+  chevron: {
+    fontSize: 12,
+    marginTop: 1,
+    color: "#666",
+  },
 });
 
 export default Analysis;

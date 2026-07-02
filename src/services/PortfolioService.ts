@@ -128,19 +128,19 @@ class PortfolioService extends BaseService {
   }
 
   public async deleteAssetBuy(portfolioId: string, buyId: string): Promise<void> {
-    return this.request<void>(`${this.baseUrl}/portfolio/${portfolioId}/buys/${buyId}`, {
+    return this.request<void>(`/portfolio/${portfolioId}/buys/${buyId}`, {
       method: "DELETE" 
     });
   }
 
   public async deleteAssetSell(portfolioId: string, sellId: string): Promise<void> {
-    return this.request<void>(`${this.baseUrl}/portfolio/${portfolioId}/sells/${sellId}`, {
+    return this.request<void>(`/portfolio/${portfolioId}/sells/${sellId}`, {
       method: "DELETE"
     });
   }
 
   public async deleteAssetDividend(portfolioId: string, dividendId: string): Promise<void> {
-    return this.request<void>(`${this.baseUrl}/portfolio/${portfolioId}/dividends/${dividendId}`, { method: "DELETE" });
+    return this.request<void>(`/portfolio/${portfolioId}/dividends/${dividendId}`, { method: "DELETE" });
   }
 
   public async getCompaniesByPortfolioId(portfolioId: string): Promise<string[]> {
