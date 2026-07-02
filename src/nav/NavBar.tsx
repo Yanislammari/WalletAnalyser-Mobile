@@ -14,11 +14,11 @@ import { NavigatorScreenParams } from "@react-navigation/native";
 const Stack = createNativeStackNavigator();
 
 export type PortfolioStackParamList = {
-  PortfolioList: undefined;
+  PortfolioList: { openModal : boolean };
   PortfolioDetail: { id: string, name : string };
 };
 
-type NavBarParamList = {
+export type NavBarParamList = {
   Dashboard : undefined;
   Portfolio : NavigatorScreenParams<PortfolioStackParamList>;
   Metrics : undefined;
@@ -81,7 +81,8 @@ export default function NavBar() {
               });
             } else {
               navigation.navigate('Portfolio', {
-                screen: 'PortfolioList'
+                screen: 'PortfolioList',
+                params : { openModal : false }
               });
             }
           },
@@ -89,7 +90,7 @@ export default function NavBar() {
       />
       <Tab.Screen name="Metrics" component={Metrics} options={{headerShown: true, header: () => <Header/>}}/>
       <Tab.Screen name="Analysis" component={Analysis} options={{headerShown: true, header: () => <Header/>}}/>
-      <Tab.Screen name="Badge" component={Badge} options={{headerShown: true, header: () => <Header/>}}/>
+      <Tab.Screen name="Badge" component={Badge} options={{headerShown: true, header: () => <Header showChoice={false}/>}}/>
     </Tab.Navigator>
   );
 }

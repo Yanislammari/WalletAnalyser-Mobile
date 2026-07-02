@@ -48,7 +48,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
           return result[0]
         })
       } catch {
-        toast.error("Can't load portfolios");
+        
       }
     };
     fetch();

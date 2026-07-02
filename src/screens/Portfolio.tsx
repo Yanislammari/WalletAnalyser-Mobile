@@ -4,7 +4,6 @@ import {
   Modal, ActivityIndicator,
   ScrollView
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from "react-native-vector-icons/Ionicons";
 import { useAuth } from "../providers/AuthProvider";
 import PortfolioService from "../services/PortfolioService";
@@ -15,6 +14,9 @@ import type { Currency } from "../models/Currency";
 import { PORTFOLIO_COLORS, stylesPortfolio } from "../styles/Portfolio_style";
 import { toast } from "sonner-native";
 import { usePortfolio } from "../providers/PortfolioProvider";
+import ErrorCardInApp from "../components/card/ErrorCard";
+import { RouteProp, useRoute } from "@react-navigation/native";
+import { PortfolioStackParamList } from "../nav/NavBar";
 
 const PAGE_SIZE = 9;
 
@@ -22,7 +24,8 @@ const Portfolios : React.FC = () => {
   const { user } = useAuth();
   const { refresh } = usePortfolio();
   const portfolioService = PortfolioService.getInstance();
-  const insets = useSafeAreaInsets();
+  const route = useRoute<RouteProp<PortfolioStackParamList, 'PortfolioList'>>();
+  const { openModal } = route.params;
 
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [total, setTotal] = useState(0);
@@ -30,12 +33,13 @@ const Portfolios : React.FC = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(openModal ?? false);
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
   const [reloadTrigger, setReloadTrigger] = useState(0);
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [newCurrencyId, setNewCurrencyId] = useState<string>("");
+  const [hasError, setHasError] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -60,7 +64,7 @@ const Portfolios : React.FC = () => {
         setPortfolios(result.data);
         setTotal(result.total);
       } catch {
-        // handle error — add your toast here
+        setHasError(true);
       } finally {
         setLoading(false);
       }
@@ -97,6 +101,17 @@ const Portfolios : React.FC = () => {
 
   const totalPages = Math.max(Math.ceil(total / PAGE_SIZE), 1);
   const noResults = !loading && total === 0;
+
+  if (hasError) {
+    return (
+      <ErrorCardInApp
+        iconBg="#F3F4F6"
+        icon={<Icon name="close-circle-outline" size={32} color="#9CA3AF" />}
+        title="Can't fetch portfolios"
+        description="An error has occured try again later"
+      />
+    );
+  }
 
   return (
     <View style={stylesPortfolio.safe}>

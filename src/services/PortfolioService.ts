@@ -128,28 +128,19 @@ class PortfolioService extends BaseService {
   }
 
   public async deleteAssetBuy(portfolioId: string, buyId: string): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/portfolio/${portfolioId}/buys/${buyId}`, {
+    return this.request<void>(`${this.baseUrl}/portfolio/${portfolioId}/buys/${buyId}`, {
       method: "DELETE" 
     });
-
-    if (!res.ok) {
-      throw new Error("Failed to delete buy");
-    }
   }
 
   public async deleteAssetSell(portfolioId: string, sellId: string): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/portfolio/${portfolioId}/sells/${sellId}`, {
+    return this.request<void>(`${this.baseUrl}/portfolio/${portfolioId}/sells/${sellId}`, {
       method: "DELETE"
     });
-
-    if (!res.ok) {
-      throw new Error("Failed to delete sell");
-    }
   }
 
   public async deleteAssetDividend(portfolioId: string, dividendId: string): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/portfolio/${portfolioId}/dividends/${dividendId}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Failed to delete dividend");
+    return this.request<void>(`${this.baseUrl}/portfolio/${portfolioId}/dividends/${dividendId}`, { method: "DELETE" });
   }
 
   public async getCompaniesByPortfolioId(portfolioId: string): Promise<string[]> {
@@ -212,13 +203,9 @@ class PortfolioService extends BaseService {
   }
 
   public async deletePortfolio(portfolioId: string): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/portfolio/${portfolioId}`, {
+    return this.request<void>(`/portfolio/${portfolioId}`, {
       method: "DELETE",
     });
-
-    if (!res.ok) {
-      throw new Error("Failed to delete portfolio");
-    }
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import Ionicons from "react-native-vector-icons/Ionicons"
-import { toast } from 'sonner-native'; // or your RN toast lib
 
 import PortfolioService from '../services/PortfolioService';
 import CurrencyService from '../services/CurrencyService';
@@ -25,12 +24,13 @@ import { TabType } from '../enums/TabType';
 import { PortfolioStackParamList } from '../nav/NavBar';
 import { TransactionStyle } from '../styles/Transaction_style'
 import BackButton from '../components/button/BackButton';
+import ErrorCardInApp from '../components/card/ErrorCard';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const PAGE_SIZE = 10;
 
 const PortfolioDetail: React.FC = () => {
   const route = useRoute<RouteProp<PortfolioStackParamList, 'PortfolioDetail'>>();
-  const navigation = useNavigation();
   const { id, name } = route.params;
 
   const portfolioService = PortfolioService.getInstance();
@@ -40,6 +40,7 @@ const PortfolioDetail: React.FC = () => {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [buys, setBuys] = useState<AssetBuyResponse[]>([]);
   const [sells, setSells] = useState<AssetSellResponse[]>([]);
   const [dividends, setDividends] = useState<AssetDividendResponse[]>([]);
@@ -56,7 +57,6 @@ const PortfolioDetail: React.FC = () => {
   const [reloadTrigger, setReloadTrigger] = useState(0);
   const [portfolioTotal, setPortfolioTotal] = useState<PortfolioTotalResponse | null>(null);
   const [totalLoading, setTotalLoading] = useState(false);
-  const [portfolioNotFound, setPortfolioNotFound] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>(TabType.BUYS);
   const [buyPage, setBuyPage] = useState(1);
   const [sellPage, setSellPage] = useState(1);
@@ -88,7 +88,7 @@ const PortfolioDetail: React.FC = () => {
         setCurrencies(fetchedCurrencies);
         setCompanies(fetchedCompanies);
       } catch {
-        setPortfolioNotFound(true);
+        setHasError(true);
       }
     };
 
@@ -140,9 +140,7 @@ const PortfolioDetail: React.FC = () => {
           setHasAnyDividends(dividendResult.total > 0);
         }
       } catch {
-        if (!portfolioNotFound) {
-          toast.error('Failed to load transactions.');
-        }
+        setHasError(true)
       } finally {
         setLoading(false);
       }
@@ -239,14 +237,28 @@ const PortfolioDetail: React.FC = () => {
     ? portfolioTotal.totalValue - portfolioTotal.totalInvested
     : null;
 
-  if (portfolioNotFound) {
+  if(hasError) {
     return (
-      <View style={TransactionStyle.centered}>
-        <Text style={TransactionStyle.notFoundText}>Portfolio not found.</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={TransactionStyle.backLink}>Go back</Text>
-        </TouchableOpacity>
+      <View style={TransactionStyle.container}>
+        <View style={[TransactionStyle.headerRow, {padding : 16}]}>
+          <View style={TransactionStyle.headerLeft}>
+            <BackButton route="PortfolioList" param={{openModal : false}} />
+            <View>
+              <Text style={TransactionStyle.title}>{name ?? "…"}</Text>
+              <Text style={TransactionStyle.subtitle}>
+                Enter your transactions.
+              </Text>
+            </View>
+          </View>
+        </View>
+        <ErrorCardInApp
+          iconBg="#F3F4F6"
+          icon={<Icon name="close-circle-outline" size={32} color="#9CA3AF" />}
+          title="Can't fetch portfolio transaction"
+          description="An error has occured try again later"
+        />
       </View>
+
     );
   }
 
@@ -256,7 +268,7 @@ const PortfolioDetail: React.FC = () => {
       {/* Header row */}
       <View style={TransactionStyle.headerRow}>
         <View style={TransactionStyle.headerLeft}>
-          <BackButton route='PortfolioList'/>
+          <BackButton route='PortfolioList' param={{openModal : false}}/>
           <View>
             <Text style={TransactionStyle.title}>{name ?? '…'}</Text>
             <Text style={TransactionStyle.subtitle}>Enter your transactions.</Text>

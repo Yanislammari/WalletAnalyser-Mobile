@@ -4,15 +4,16 @@ import Ionicons from "react-native-vector-icons/Ionicons"
 
 interface Props {
   route? : string
+  param? : any
 }
 
-const BackButton : React.FC<Props> = ({ route } : Props) => {
-  const navigation = useNavigation()
+const BackButton : React.FC<Props> = ({ route, param } : Props) => {
+  const navigation = useNavigation<any>();
   return (
     <TouchableOpacity
       onPress={() => {
         if (route) {
-          navigation.navigate(route as never);
+          navigation.navigate(route, param);
         } else {
           navigation.goBack();
         }
