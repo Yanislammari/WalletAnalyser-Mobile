@@ -10,6 +10,8 @@ import PortfolioDetail from "../screens/PortfolioDetail";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { usePortfolio } from "../providers/PortfolioProvider";
 import { NavigatorScreenParams } from "@react-navigation/native";
+import { RankingType } from "../enums/RankType";
+import AnalysisDetail from "../screens/AnalysisDetail";
 
 const Stack = createNativeStackNavigator();
 
@@ -17,6 +19,11 @@ export type PortfolioStackParamList = {
   PortfolioList: { openModal : boolean };
   PortfolioDetail: { id: string, name : string };
 };
+
+export type AnalysisStackParamList = {
+  AnalysisList: undefined
+  AnalysisDetail : { id : string | undefined, type : RankingType, offset : number}
+}
 
 export type NavBarParamList = {
   Dashboard : undefined;
@@ -36,6 +43,21 @@ function PortfolioStackNavigator() {
       <Stack.Screen name="PortfolioDetail" component={PortfolioDetail} options={{
           headerShown: false,
           header: () => <Header showChoice={false} />,
+        }}/>
+    </Stack.Navigator>
+  );
+}
+
+function AnalysisStackNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="AnalysisList" component={Analysis} options={{
+          headerShown: false,
+          header: () => <Header/>,
+        }}/>
+      <Stack.Screen name="AnalysisDetail" component={AnalysisDetail} options={{
+          headerShown: false,
+          header: () => <Header/>,
         }}/>
     </Stack.Navigator>
   );
@@ -89,7 +111,7 @@ export default function NavBar() {
         })}
       />
       <Tab.Screen name="Metrics" component={Metrics} options={{headerShown: true, header: () => <Header/>}}/>
-      <Tab.Screen name="Analysis" component={Analysis} options={{headerShown: true, header: () => <Header/>}}/>
+      <Tab.Screen name="Analysis" component={AnalysisStackNavigator} options={{headerShown: true, header: () => <Header/>}}/>
       <Tab.Screen name="Badge" component={Badge} options={{headerShown: true, header: () => <Header showChoice={false}/>}}/>
     </Tab.Navigator>
   );

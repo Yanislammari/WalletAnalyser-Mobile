@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, Pressable, ScrollView, StyleSheet, Animated } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import CardSectorPerf, { type SectorCardDataProps } from "../components/card/CardSectorPerf";
@@ -15,20 +15,17 @@ import { StocksDetail } from "../components/stock_analysis/StockDetail";
 import { RankingType } from "../enums/RankType";
 import Icon from "react-native-vector-icons/Ionicons";
 import ViewSelector, { ViewType } from "../components/modal/SelectView";
+import { AnalysisStackParamList } from "../nav/NavBar";
 
-type RootStackParamList = {
-  AnalysisDetail: { id: string; type: RankingType };
-};
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type NavigationProp = NativeStackNavigationProp<AnalysisStackParamList>;
 
 const Analysis: React.FC = () => {
   const analysisService = AnalysisService.getInstance();
+  const navigation = useNavigation<NavigationProp>();
   const [clusters, setClusters] = useState<SectorCardDataProps[]>([]);
   const [sectors, setSectors] = useState<SectorCardDataProps[]>([]);
   const [countries, setCountries] = useState<SectorCardDataProps[]>([]);
   const [userStocks, setUserStocks] = useState<AssetRankingResponse | null>(null);
-  const navigation = useNavigation<NavigationProp>();
   const [search, setSearch] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -67,6 +64,7 @@ const Analysis: React.FC = () => {
               navigation.navigate("AnalysisDetail", {
                 id: sector.sector?.uuid ?? "",
                 type: RankingType.SECTORS,
+                offset : 0
               }),
           };
           return mapped;
@@ -86,11 +84,13 @@ const Analysis: React.FC = () => {
               perf: p.perf,
             })),
             length: cluster.length,
-            onClick: () => {}
-              /**navigation.navigate("AnalysisDetail", {
-                id: cluster.unique_key,
+            onClick: () => {
+              navigation.navigate("AnalysisDetail", {
+                id: cluster.unique_key?.toString(),
                 type: RankingType.CLUSTERS,
-              }),**/
+                offset : 0
+              })
+            }
           };
           return mapped;
         });
@@ -113,6 +113,7 @@ const Analysis: React.FC = () => {
               navigation.navigate("AnalysisDetail", {
                 id: country.country?.uuid ?? "",
                 type: RankingType.COUNTRIES,
+                offset : 0
               }),
           };
           return mapped;
@@ -198,7 +199,7 @@ const Analysis: React.FC = () => {
             ) : (
               filteredUserStocks.map((p) => (
                 <View key={p.asset.uuid}>
-                  <StocksDetail rankAsset={p} mainRank="sectors" />
+                  <StocksDetail rankAsset={p} mainRank="sectors" blockClick={false} highlightAnim={null}/>
                 </View>
               ))
             )}

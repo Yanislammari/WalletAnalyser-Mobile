@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, Animated } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { toast } from "sonner-native";
@@ -7,15 +7,15 @@ import { toast } from "sonner-native";
 import type { RankedAsset } from "../../responses/AssetAnalysisResponse";
 import { clusterName } from "../../utils/ClusterNaming";
 import { RankingType } from "../../enums/RankType";
+import { AnalysisStackParamList } from "../../nav/NavBar";
 
-type RootStackParamList = {
-  AnalysisDetail: { id: string | number; type: RankingType; offset: number };
-};
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type NavigationProp = NativeStackNavigationProp<AnalysisStackParamList, "AnalysisDetail">;
 
 interface RankedProps {
   rankAsset: RankedAsset;
-  mainRank: RankingType; // you control which one is "main"
+  mainRank: RankingType;
+  blockClick: boolean;
+  highlightAnim: Animated.Value | null;
 }
 
 export function getMainRankPosition(rankAsset: RankedAsset, mainRank: RankingType) {
@@ -49,7 +49,7 @@ function getMainLabel(rankAsset: RankedAsset, mainRank: RankingType): string {
   }
 }
 
-export const StocksDetail: React.FC<RankedProps> = (rankAssetProps) => {
+const StocksDetailComponent: React.FC<RankedProps> = (rankAssetProps) => {
   const navigation = useNavigation<NavigationProp>();
   const rankAsset = rankAssetProps.rankAsset;
   const perf = rankAsset?.perf ?? 0;
@@ -75,7 +75,8 @@ export const StocksDetail: React.FC<RankedProps> = (rankAssetProps) => {
       toast.info("You can't access this");
       return;
     }
-    navigation.navigate("AnalysisDetail", { id, type, offset: position });
+    const strId = id.toString();
+    navigation.navigate("AnalysisDetail", { id: strId, type, offset: position });
   };
 
   const allTags = [
@@ -111,12 +112,11 @@ export const StocksDetail: React.FC<RankedProps> = (rankAssetProps) => {
     handleTagClick(mainTag.type, mainTag.pos ?? 0, mainTag.id);
   };
 
-  return (
+  const content = (
     <View style={[styles.container, isPositive ? styles.rowPositive : styles.rowNegative]}>
-
-      {/* Top line: badge + name + perf, cliquable vers le mainRank */}
       <Pressable
         onPress={handleMainRankClick}
+        disabled={rankAssetProps.blockClick}
         style={({ pressed }) => [styles.topRow, pressed && styles.topRowPressed]}
       >
         <View style={[styles.badge, { backgroundColor: isPositive ? "#BBF7D0" : "#FECACA" }]}>
@@ -140,7 +140,6 @@ export const StocksDetail: React.FC<RankedProps> = (rankAssetProps) => {
         </Text>
       </Pressable>
 
-      {/* Bottom line: les 2 tags restants, un peu plus hauts */}
       <View style={styles.tagsRow}>
         {tags.map((tag, i) => (
           <Pressable
@@ -158,7 +157,35 @@ export const StocksDetail: React.FC<RankedProps> = (rankAssetProps) => {
       </View>
     </View>
   );
+
+  const { highlightAnim } = rankAssetProps;
+
+  if (!highlightAnim) {
+    return content;
+  }
+
+  const translateX = highlightAnim.interpolate({ inputRange: [0, 1], outputRange: [6, 0] });
+  const translateY = highlightAnim.interpolate({ inputRange: [0, 1], outputRange: [-4, 0] });
+  const shadowOpacity = highlightAnim.interpolate({ inputRange: [0, 1], outputRange: [0.25, 0] });
+
+  return (
+    <Animated.View
+      style={{
+        transform: [{ translateX }, { translateY }],
+        shadowColor: "#000",
+        shadowOffset: { width: 4, height: 6 },
+        shadowRadius: 20,
+        shadowOpacity,
+        borderRadius: 12,
+        zIndex: 10,
+      }}
+    >
+      {content}
+    </Animated.View>
+  );
 };
+
+export const StocksDetail = React.memo(StocksDetailComponent);
 
 const styles = StyleSheet.create({
   row: {
@@ -213,7 +240,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8, // plus de hauteur (était 4)
     borderRadius: 8,
     backgroundColor: "#F3F4F6",
-    maxWidth: "48%",
+    maxWidth: "75%",
   },
   tagPressed: {
     backgroundColor: "#E5E7EB",
@@ -227,5 +254,4 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
     flexShrink: 0,
   },
-  
 });
