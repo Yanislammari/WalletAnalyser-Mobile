@@ -1,4 +1,5 @@
 export const C = {
+  purple700: "#6d28d9",
   purple600: "#9333ea",
   purple400: "#c084fc",
   purple200: "#e9d5ff",
@@ -20,6 +21,7 @@ export const C = {
   amber700: "#b45309",
   gray900: "#111827",
   gray800: "#1f2937",
+  gray600: "#4b5563",
   gray500: "#6b7280",
   gray400: "#9ca3af",
   gray300: "#d1d5db",
