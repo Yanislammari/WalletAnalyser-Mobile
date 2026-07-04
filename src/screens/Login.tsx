@@ -39,9 +39,9 @@ const getErrorMessage = (backendMessage: string): string => {
 
 const Login: React.FC = () => {
   const navigation = useNavigation<LoginNavigationProp>();
-  const { login, isAuthenticated } = useAuth();
+  const { login } = useAuth();
 
-  const [email, setEmail] = useState("alexisduplessis2003@gmail.com");
+  const [email, setEmail] = useState("aa@aa.com");
   const [password, setPassword] = useState("MoiMeme94@");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);

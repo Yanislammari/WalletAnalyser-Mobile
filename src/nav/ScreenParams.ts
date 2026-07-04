@@ -3,4 +3,5 @@ export type RootStackParamList = {
   Register : undefined;
   ForgottenPassword : undefined;
   App : undefined;
+  ModifyProfile : undefined;
 };

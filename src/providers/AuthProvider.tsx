@@ -15,6 +15,7 @@ export const navigationRef = React.createRef<NavigationContainerRef<any>>();
 export const AUTH_LOGOUT_EVENT = "auth:logout";
 
 interface AuthContextType {
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
@@ -35,7 +36,7 @@ export const STORAGE_KEYS = {
 } as const;
 
 const PUBLIC_ROUTES = ["Main", "Login", "Register"];
-const mapUserResponseToUser = (u: UserResponse): User => ({
+export const mapUserResponseToUser = (u: UserResponse): User => ({
   id: u.id,
   email: u.email,
   firstName: u.firstName,
@@ -205,6 +206,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider
       value={{
+        setUser,
         user,
         token,
         isAuthenticated,

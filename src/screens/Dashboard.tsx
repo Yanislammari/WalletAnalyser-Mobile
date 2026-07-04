@@ -26,6 +26,8 @@ import { C } from "../utils/color";
 import { NavBarParamList, PortfolioStackParamList } from "../nav/NavBar";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import ErrorCardInApp from "../components/card/ErrorCard";
+import Icon from "react-native-vector-icons/Ionicons";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -60,6 +62,7 @@ const DashboardPage: React.FC = () => {
   const [total, setTotal] = useState<PortfolioTotalResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [error , setError] = useState<string | null>(null);
 
   const handleRefresh = async () => {
     if (!selectedPortfolio) return;
@@ -71,33 +74,51 @@ const DashboardPage: React.FC = () => {
       ]);
       setMetrics(m);
       setTotal(t);
-    } catch {
-      // ignore — keep showing whatever was already on screen
+    } catch(e : any) {
+      if(e.message == 'You need to subscribe to access this feature.') {
+        setError(e.message);
+      } else {
+        setError("Failed to load metrics. Please try again later.");
+      }
     } finally {
       setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    if (!selectedPortfolio) {
-      setMetrics(null);
-      setTotal(null);
-      return;
-    }
-    setLoading(true);
-    Promise.all([
-      portfolioService.getMetrics(selectedPortfolio.id),
-      portfolioService.getPortfolioTotal(selectedPortfolio.id).catch(() => null),
-    ])
-      .then(([m, t]) => {
+    const loadMetrics = async () => {
+      if (!selectedPortfolio) {
+        setMetrics(null);
+        setTotal(null);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const [m, t] = await Promise.all([
+          portfolioService.getMetrics(selectedPortfolio.id),
+          portfolioService
+            .getPortfolioTotal(selectedPortfolio.id)
+            .catch(() => null),
+        ]);
+
         setMetrics(m);
         setTotal(t);
-      })
-      .catch(() => {})
-      .finally(() => {
+      } catch (e: any) {
+        if (e?.message === "You need to subscribe to access this feature.") {
+          setError(e.message);
+        } else {
+          setError("Failed to load metrics. Please try again later.");
+        }
+      } finally {
         setLoading(false);
         setRefreshing(false);
-      });
+      }
+    };
+
+    loadMetrics();
   }, [selectedPortfolio, refreshing]);
 
   // ─── Stat cards ────────────────────────────────────────────────────────────
@@ -157,6 +178,15 @@ const DashboardPage: React.FC = () => {
         {/* No portfolio */}
         {!selectedPortfolio && (
           <NoPortfolioSelected />
+        )}
+
+        {error && (
+          <ErrorCardInApp
+            iconBg="#f3f4f6"
+            icon={<Icon name="close-circle-outline" size={32} color="#9ca3af" />}
+            title=""
+            description={error}
+          />
         )}
 
         {/* Stat cards */}

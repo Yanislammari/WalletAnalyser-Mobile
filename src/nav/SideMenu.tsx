@@ -2,10 +2,9 @@ import { View, Text, TouchableOpacity, Modal, StyleSheet, Dimensions } from "rea
 import Icon from "react-native-vector-icons/Ionicons";
 import { useAuth } from "../providers/AuthProvider";
 import { useNavigation } from "@react-navigation/native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-const DRAWER_WIDTH = SCREEN_WIDTH * 0.72;
+const DRAWER_WIDTH = SCREEN_WIDTH * 0.70;
 
 interface Props {
   visible: boolean;
@@ -14,8 +13,8 @@ interface Props {
 
 export default function SideMenu({ visible, onClose }: Props) {
   const { user, logout } = useAuth();
+  const isSubscribed = user?.subscribe
   const navigation = useNavigation<any>();
-  const insets = useSafeAreaInsets();
 
   const initials = [user?.firstName?.[0], user?.lastName?.[0]]
     .filter(Boolean)
@@ -23,6 +22,15 @@ export default function SideMenu({ visible, onClose }: Props) {
     .toUpperCase();
 
   const menuItems = [
+    {
+      label: "Modify profile",
+      icon: "person-outline",
+      color: "#3b82f6",
+      onPress: () => {
+        onClose();
+        navigation.navigate("ModifyProfile");
+      },
+    },
     {
       label: "Sign out",
       icon: "log-out-outline",
@@ -83,7 +91,13 @@ export default function SideMenu({ visible, onClose }: Props) {
               </TouchableOpacity>
             ))}
           </View>
-
+          <View style={styles.subscriptionBanner}>
+            <Text style={styles.subscriptionText}>
+              {isSubscribed
+                ? "Full access"
+                : "Free access (some features might be disabled)"}
+            </Text>
+          </View>
         </View>
       </View>
     </Modal>
@@ -106,7 +120,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    paddingHorizontal: 0,
+    paddingBottom: 60, // 👈 important so content doesn't overlap banner
     shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowRadius: 20,
@@ -187,5 +201,22 @@ const styles = StyleSheet.create({
   menuLabel: {
     fontSize: 15,
     fontWeight: "600",
+  },
+  subscriptionBanner: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#7c3aed",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  subscriptionText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "700",
+    textAlign: "center",
   },
 });
