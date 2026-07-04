@@ -15,7 +15,7 @@ import { PORTFOLIO_COLORS, stylesPortfolio } from "../styles/Portfolio_style";
 import { toast } from "sonner-native";
 import { usePortfolio } from "../providers/PortfolioProvider";
 import ErrorCardInApp from "../components/card/ErrorCard";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { PortfolioStackParamList } from "../nav/NavBar";
 
 const PAGE_SIZE = 9;
@@ -24,6 +24,7 @@ const Portfolios : React.FC = () => {
   const { user } = useAuth();
   const { refresh } = usePortfolio();
   const portfolioService = PortfolioService.getInstance();
+  const navigation = useNavigation();
   const route = useRoute<RouteProp<PortfolioStackParamList, 'PortfolioList'>>();
   const { openModal } = route.params;
 
@@ -48,6 +49,13 @@ const Portfolios : React.FC = () => {
     }, 300);
     return () => clearTimeout(timer);
   }, [search]);
+
+  useEffect(() => {
+    if (openModal) {
+      setModalVisible(true);
+      navigation.setParams({ openModal: undefined } as any);
+    }
+  }, [openModal]);
 
   useEffect(() => {
     CurrencyService.getInstance().getAll().then(setCurrencies).catch(() => {});

@@ -31,9 +31,13 @@ abstract class BaseService {
       const isAuthError =
         (res.status === 401 && error?.type === "NO_AUTH") ||
         (res.status === 400 && error?.type === "NO_AUTH")
+      const isSubscribeError =  (res.status === 401 && error?.type === "NOT_SUBSCRIBE") ||
+        (res.status === 400 && error?.type === "NOT_SUBSCRIBE")
       if (isAuthError) {
         DeviceEventEmitter.emit(AUTH_LOGOUT_EVENT);
         throw new Error(error.message || "Your session has expired. Please login again.");
+      } else if (isSubscribeError) {
+        throw new Error("You need to subscribe to access this feature.");
       }
       throw new Error(error.message || "Request failed");
     }
