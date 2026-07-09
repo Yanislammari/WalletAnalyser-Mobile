@@ -110,11 +110,15 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
   useEffect(() => {
     if (!form.assetId || !form.date || !form.currencyId) { setAvgBuyPrice(null); return; }
     let cancelled = false;
-    portfolioService.getAverageBuyPrice(props.portfolioId, form.assetId, form.date)
-      .then((avg) => { if (!cancelled) setAvgBuyPrice(avg); })
+    portfolioService.getAverageBuyPrice(props.portfolioId, form.assetId, form.date, form.currencyId)
+      .then((avg) => {
+        if (cancelled) return;
+        if (avg == null)setAvgBuyPrice(null)
+        else setAvgBuyPrice(avg)
+      })
       .catch(() => { if (!cancelled) setAvgBuyPrice(null); });
     return () => { cancelled = true; };
-  }, [form.assetId, form.date, form.currencyId]);
+  }, [form.assetId, form.date, form.currencyId, assets]);
 
   // Auto-fill price from Yahoo
   useEffect(() => {
@@ -215,8 +219,13 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
     const s = parseFloat(form.shares), p = parseFloat(form.pricePerShare);
     return s > 0 && p > 0 ? parseFloat((s * p).toFixed(2)) : null;
   })();
-  const isDisabled = saving || !form.date || !form.assetId || !form.currencyId
-    || !form.shares || !form.pricePerShare || hasNoShares || sharesExceeded;
+  const priceNum = Number(form.pricePerShare);
+  const sharesNum = Number(form.shares);
+
+  const isDisabled = saving || !form.date || !form.currencyId
+    || !form.pricePerShare || !form.shares
+    || isNaN(priceNum) || priceNum <= 0
+    || isNaN(sharesNum) || sharesNum <= 0;
 
   return (
     <Modal

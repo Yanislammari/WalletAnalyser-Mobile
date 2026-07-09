@@ -177,8 +177,15 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
     const a = parseFloat(form.amount), p = parseFloat(form.pricePerShare);
     return isAmountMode && a > 0 && p > 0 ? parseFloat((a / p).toFixed(6)) : null;
   })();
+  const amountNum = Number(form.amount);
+  const priceNum = Number(form.pricePerShare);
+  const sharesNum = Number(form.shares);
+
   const isDisabled = saving || !form.date || !form.currencyId
-    || (isAmountMode ? (!form.amount || !form.pricePerShare) : (!form.shares || !form.pricePerShare));
+    || (isAmountMode ? (!form.amount || !form.pricePerShare) : (!form.shares || !form.pricePerShare))
+    || isNaN(amountNum) || amountNum <= 0
+    || isNaN(priceNum) || priceNum <= 0
+    || isNaN(sharesNum) || sharesNum <= 0;
 
   const PriceLabel = () => (
     <View style={styles.priceRow}>

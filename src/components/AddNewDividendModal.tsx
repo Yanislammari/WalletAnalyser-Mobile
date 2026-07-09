@@ -54,6 +54,11 @@ const AddNewDividendModal: React.FC<Props> = ({
   const assetService = AssetService.getInstance();
 
   const { isPro } = useAuth();
+  const isDisabled = !form.date ||
+                  !form.amount ||
+                  !form.currencyId ||
+                  isNaN(Number(form.amount)) || Number(form.amount) <= 0 ||
+                  saving
 
   const freeMinDate = useMemo(() => {
     if (isPro) return undefined;
@@ -205,14 +210,9 @@ const AddNewDividendModal: React.FC<Props> = ({
               </TouchableOpacity>
 
               <TouchableOpacity
-                disabled={
-                  !form.date ||
-                  !form.amount ||
-                  !form.currencyId ||
-                  saving
-                }
+                disabled={isDisabled}
                 onPress={handleSave}
-                style={styles.save}
+                style={[styles.btn, styles.btnSave, isDisabled && styles.btnDisabled]}
               >
                 {saving ? (
                   <ActivityIndicator color="white" />
@@ -298,13 +298,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
-
-  save: {
+  btn: {
     flex: 1,
-    padding: 12,
-    backgroundColor: "#9333EA",
+    paddingVertical: 10,
     borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center",
+  },
+  btnSave: {
+    backgroundColor: "#7c3aed",
+  },
+  btnDisabled: {
+    opacity: 0.5,
   },
 });
 

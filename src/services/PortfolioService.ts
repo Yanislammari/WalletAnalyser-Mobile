@@ -161,8 +161,8 @@ class PortfolioService extends BaseService {
     return res.availableShares;
   }
 
-  public async getAverageBuyPrice(portfolioId: string, assetId: string, date: string): Promise<number | null> {
-    const params = new URLSearchParams({ assetId, date });
+  public async getAverageBuyPrice(portfolioId: string, assetId: string, date: string, currencyId : string): Promise<number | null> {
+    const params = new URLSearchParams({ assetId, date, currencyId});
     const res = await this.request<{ averageBuyPrice: number | null }>(`/portfolio/${portfolioId}/average-buy-price?${params}`, { method: "GET" });
     return res.averageBuyPrice;
   }
