@@ -13,6 +13,7 @@ import { NavigatorScreenParams } from "@react-navigation/native";
 import { RankingType } from "../enums/RankType";
 import AnalysisDetail from "../screens/AnalysisDetail";
 import { ModifyProfile } from "../screens/ModifyProfile";
+import Payments from "../screens/Payments";
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +34,7 @@ export type NavBarParamList = {
   Badge : undefined;
   Analysis : undefined;
   ModifyProfile : undefined;
+  Payments : undefined;
 };
 
 function PortfolioStackNavigator() {
@@ -123,6 +125,16 @@ export default function NavBar() {
       <Tab.Screen
         name="ModifyProfile"
         component={ModifyProfile}
+        options={{
+          tabBarButton: () => null,
+          tabBarItemStyle: { display: "none" },
+          headerShown: true,
+          header: () => <Header showChoice={false} />,
+        }}
+      />
+      <Tab.Screen
+        name="Payments"
+        component={Payments}
         options={{
           tabBarButton: () => null,
           tabBarItemStyle: { display: "none" },

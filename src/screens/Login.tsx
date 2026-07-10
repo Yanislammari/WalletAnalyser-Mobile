@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import GoogleAuthButton from "../components/button/GoogleAuthButton";
 import { RootStackParamList } from "../nav/ScreenParams";
 import { LoginStyles } from "../styles/Login_style";
 import Icon from "react-native-vector-icons/Ionicons";
+import { trackButtonClick } from "../utils/FirebaseTracking";
 
 type LoginNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -60,6 +61,7 @@ const Login: React.FC = () => {
       return;
     }
 
+    trackButtonClick("Login",{screen : "Login"});
     setLoading(true);
     try {
       await login(email, password);

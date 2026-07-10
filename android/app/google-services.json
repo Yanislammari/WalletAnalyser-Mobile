@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "2959335938",
+    "project_id": "walletanalyser-78d82",
+    "storage_bucket": "walletanalyser-78d82.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:2959335938:android:16c3b93ca2ca8806537d1b",
+        "android_client_info": {
+          "package_name": "com.walletanalysermobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkTsoDUDHFnZCaZuotuE7s4GgUJsmb2CI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

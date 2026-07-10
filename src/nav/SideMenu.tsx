@@ -23,6 +23,15 @@ export default function SideMenu({ visible, onClose }: Props) {
 
   const menuItems = [
     {
+      label: "Payments",
+      icon: "wallet",
+      color: "#0000",
+      onPress: () => {
+        onClose();
+        navigation.navigate("Payments");
+      },
+    },
+    {
       label: "Modify profile",
       icon: "person-outline",
       color: "#3b82f6",
