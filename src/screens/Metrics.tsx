@@ -32,6 +32,7 @@ import { DrawdownChart } from "../components/metrics/DrawDownChart";
 import ErrorCardInApp from "../components/card/ErrorCard";
 import { C } from "../utils/color";
 import { PeriodPreset, presetToFromDate, PRESET_LABELS, PRESET_MONTHS, fmt, fmtPct, formatPeriod, pos } from "../components/metrics/helper";
+import { trackButtonClick } from "../utils/FirebaseTracking";
 
 interface MetricCardProps {
   label: string;
@@ -111,6 +112,7 @@ const Metrics: React.FC = () => {
 
   useEffect(() => {
     if (!selectedPortfolio) return;
+    trackButtonClick("Metrics");
     setLoading(true);
     setError(null);
     const fromDate = presetToFromDate(period);
@@ -122,6 +124,7 @@ const Metrics: React.FC = () => {
       })
       .catch((e) => {
         if(e.message == 'You need to subscribe to access this feature.') {
+          trackButtonClick("Metrics_not_subscribe");
           setError(e.message);
         } else {
           setError("Failed to load metrics. Please try again later.");

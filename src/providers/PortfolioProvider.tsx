@@ -4,6 +4,7 @@ import PortfolioService from "../services/PortfolioService";
 import { toast } from "sonner-native";
 import { useAuth } from "./AuthProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { trackButtonClick } from "../utils/FirebaseTracking";
 
 type PortfolioContextType = {
   selectedPortfolio: Portfolio | null;
@@ -58,6 +59,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     setSelectedPortfolio(portfolio);
     try {
       await AsyncStorage.setItem(SELECTED_PORTFOLIO_KEY, portfolio.id);
+      trackButtonClick("Change_portfolio")
     } catch {
 
     }

@@ -17,7 +17,6 @@ import GoogleAuthButton from "../components/button/GoogleAuthButton";
 import { RootStackParamList } from "../nav/ScreenParams";
 import { LoginStyles } from "../styles/Login_style";
 import Icon from "react-native-vector-icons/Ionicons";
-import { trackButtonClick } from "../utils/FirebaseTracking";
 
 type LoginNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -42,7 +41,7 @@ const Login: React.FC = () => {
   const navigation = useNavigation<LoginNavigationProp>();
   const { login } = useAuth();
 
-  const [email, setEmail] = useState("aa@aa.com");
+  const [email, setEmail] = useState("alexisduplessis2003@gmail.com");
   const [password, setPassword] = useState("MoiMeme94@");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -60,8 +59,6 @@ const Login: React.FC = () => {
       toast.error("Password is required.");
       return;
     }
-
-    trackButtonClick("Login",{screen : "Login"});
     setLoading(true);
     try {
       await login(email, password);

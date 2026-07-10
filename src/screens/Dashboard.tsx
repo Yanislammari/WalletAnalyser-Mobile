@@ -228,7 +228,7 @@ const DashboardPage: React.FC = () => {
           ))}
 
         {/* Metric strip */}
-        {selectedPortfolio &&
+        {/*selectedPortfolio &&
           (loading ? (
             <Skeleton style={styles.stripSkeleton} />
           ) : (
@@ -239,7 +239,7 @@ const DashboardPage: React.FC = () => {
                 <MetricStrip metrics={metrics} />
               </View>
             )
-          ))}
+          ))*/}
 
         {/* Empty state — no transactions */}
         {!loading && metrics && metrics.totalInvested === 0 && (

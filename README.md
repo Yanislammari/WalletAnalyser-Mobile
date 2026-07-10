@@ -99,3 +99,4 @@ To learn more about React Native, take a look at the following resources:
 npx react-native log-android
 npm run android
 adb devices
+adb shell setprop debug.firebase.analytics.app .none.

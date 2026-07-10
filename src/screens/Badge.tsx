@@ -11,6 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BadgeStyle } from "../styles/Badge_style";
 import { SvgXml } from "react-native-svg";
 import { formatTime } from "../utils/formatTime";
+import { trackButtonClick } from "../utils/FirebaseTracking";
 
 interface Props {
   badge : UserBadge | null,
@@ -168,6 +169,7 @@ const Badges: React.FC = () => {
 
   const getAllBadges = async () => {
     try {
+      trackButtonClick("Badges")
       const response = await badgeService.getAll();
       setBadgesMetaData(response);
       if (response.isNew && response.newBadges.length === 0) {
