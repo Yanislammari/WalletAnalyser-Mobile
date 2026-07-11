@@ -104,6 +104,31 @@ const Metrics: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<PeriodPreset>("ALL");
   const [portfolioStartDate, setPortfolioStartDate] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (!selectedPortfolio) return;
+    setError(null);
+    setRefreshing(true)
+    const fromDate = presetToFromDate(period);
+    portfolioService
+      .getMetrics(selectedPortfolio.id, fromDate)
+      .then((m) => {
+        setMetrics(m);
+        if (period === "ALL" && m.firstBuyDate) setPortfolioStartDate(m.firstBuyDate);
+      })
+      .catch((e) => {
+        if(e.message == 'You need to subscribe to access this feature.') {
+          trackButtonClick("Metrics_not_subscribe");
+          setError(e.message);
+        } else {
+          setError("Failed to load metrics. Please try again later.");
+        }
+      })
+      .finally(() => {
+        setRefreshing(false);
+      });
+  };
 
   useEffect(() => {
     if (!selectedPortfolio) return;
@@ -148,7 +173,11 @@ const Metrics: React.FC = () => {
   const hasSells = (metrics?.totalReturned ?? 0) - (metrics?.totalDividends ?? 0) > 0.01;
 
   return (
-    <ScrollView style={stylesMetrics.screen} contentContainerStyle={stylesMetrics.screenContent}>
+    <ScrollView style={stylesMetrics.screen} contentContainerStyle={stylesMetrics.screenContent}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+      }
+    >
       {/* Header */}
       <View>
         <Text style={stylesMetrics.h1}>Performance Metrics</Text>
