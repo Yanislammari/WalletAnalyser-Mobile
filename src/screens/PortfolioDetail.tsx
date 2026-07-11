@@ -3,9 +3,10 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
+  RefreshControl
 } from 'react-native';
-import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { useRoute, RouteProp } from '@react-navigation/native';
 import Ionicons from "react-native-vector-icons/Ionicons"
 
 import PortfolioService from '../services/PortfolioService';
@@ -264,7 +265,6 @@ const PortfolioDetail: React.FC = () => {
 
   return (
     <ScrollView style={TransactionStyle.container} contentContainerStyle={TransactionStyle.content}>
-
       {/* Header row */}
       <View style={TransactionStyle.headerRow}>
         <View style={TransactionStyle.headerLeft}>

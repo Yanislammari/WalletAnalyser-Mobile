@@ -104,11 +104,6 @@ const Metrics: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<PeriodPreset>("ALL");
   const [portfolioStartDate, setPortfolioStartDate] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-  }
 
   useEffect(() => {
     if (!selectedPortfolio) return;
@@ -132,9 +127,8 @@ const Metrics: React.FC = () => {
       })
       .finally(() => {
         setLoading(false);
-        setRefreshing(false);
       });
-  }, [selectedPortfolio, period, refreshing]);
+  }, [selectedPortfolio, period]);
 
   useEffect(() => {
     setPeriod("ALL");
@@ -154,11 +148,7 @@ const Metrics: React.FC = () => {
   const hasSells = (metrics?.totalReturned ?? 0) - (metrics?.totalDividends ?? 0) > 0.01;
 
   return (
-    <ScrollView style={stylesMetrics.screen} contentContainerStyle={stylesMetrics.screenContent}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-      }
-    >
+    <ScrollView style={stylesMetrics.screen} contentContainerStyle={stylesMetrics.screenContent}>
       {/* Header */}
       <View>
         <Text style={stylesMetrics.h1}>Performance Metrics</Text>

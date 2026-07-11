@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet, Animated } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, Animated, RefreshControl } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import CardSectorPerf, { type SectorCardDataProps } from "../components/card/CardSectorPerf";

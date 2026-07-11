@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useRoute, RouteProp } from "@react-navigation/native";
 
@@ -14,6 +14,7 @@ import { AnalysisStackParamList } from "../nav/NavBar";
 import BackButton from "../components/button/BackButton";
 import { clusterName } from "../utils/ClusterNaming";
 import { FlashList, FlashListRef } from "@shopify/flash-list";
+import { ScrollView } from "react-native-gesture-handler";
 
 type AnalysisDetailRouteProp = RouteProp<AnalysisStackParamList, "AnalysisDetail">;
 
@@ -65,7 +66,6 @@ const AnalysisDetail: React.FC = () => {
       } finally {
         if (isCurrent) {
           setInitialLoading(false);
-          setRefetching(false);
           isFirstFetch.current = false;
         }
       }
