@@ -79,3 +79,6 @@ yarn-error.log
 # Metro bundler cache
 *.bundle
 .bundle/
+
+bundletool-all-1.18.3.jar
+app.apks
