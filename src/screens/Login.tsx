@@ -41,8 +41,8 @@ const Login: React.FC = () => {
   const navigation = useNavigation<LoginNavigationProp>();
   const { login } = useAuth();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("alexisduplessis2003@gmail.com");
+  const [password, setPassword] = useState("MoiMeme94@");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 

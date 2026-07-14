@@ -35,14 +35,14 @@ class AnalysisService extends BaseService {
     });
   }
 
-  public async getUserStocksMetaData(portolio_id : string): Promise<AssetRankingResponse>{
-    return this.request<AssetRankingResponse>(this.url + "user_stocks/"+portolio_id, {
+  public async getUserStocksMetaData(portolio_id : string, offset: number, limit: number, search: string): Promise<AssetRankingResponse>{
+    return this.request<AssetRankingResponse>(this.url + "user_stocks/"+portolio_id+`?offset=${offset}&limit=${limit}&search=${search}`, {
         method: "GET" 
     });
   }
 
-  public async getWholeSectorsDetailMetaData(type : RankingType, uuid : string): Promise<AssetRankingResponse>{
-    return this.request<AssetRankingResponse>(this.url + `sector_detail?type=${type}&uuid=${uuid}`, {
+  public async getWholeSectorsDetailMetaData(type : RankingType, uuid : string, offset: number, limit: number, search: string): Promise<AssetRankingResponse>{
+    return this.request<AssetRankingResponse>(this.url + `sector_detail?type=${type}&uuid=${uuid}&offset=${offset}&limit=${limit}&search=${search}`, {
         method: "GET" 
     });
   }

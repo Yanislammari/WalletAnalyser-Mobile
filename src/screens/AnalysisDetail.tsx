@@ -14,7 +14,6 @@ import { AnalysisStackParamList } from "../nav/NavBar";
 import BackButton from "../components/button/BackButton";
 import { clusterName } from "../utils/ClusterNaming";
 import { FlashList, FlashListRef } from "@shopify/flash-list";
-import { ScrollView } from "react-native-gesture-handler";
 
 type AnalysisDetailRouteProp = RouteProp<AnalysisStackParamList, "AnalysisDetail">;
 
@@ -31,13 +30,25 @@ const AnalysisDetail: React.FC = () => {
 
   const [search, setSearch] = useState<string>("");
   const [initialLoading, setInitialLoading] = useState(true);
-  const [refetching, setRefetching] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [sectorMetaData, setSectorMetaData] = useState<AssetRankingResponse | null>(null);
   const [title, setTitle] = useState("Peers vs peers");
 
   const flatListRef = useRef<FlashListRef<RankedAsset>>(null);
+  const hasScrolledOnceRef = useRef(false);
   const isFirstFetch = useRef(true);
+  const isAutoScrollingRef = useRef(safeOffset > 0);
+  const didMountSearchRef = useRef(false);
+
+  const LIMIT = 50;
+  const offsetStarter = 25;
+  const topOffsetRef = useRef(safeOffset - offsetStarter);
+  const bottomOffsetRef = useRef(safeOffset + offsetStarter)
+  const loadingRef = useRef(false);
+  const [hasMoreUp, setHasMoreUp] = useState(true);
+  const [hasMoreDown, setHasMoreDown] = useState(true);
+  const [isLoadingMoreUp, setIsLoadingMoreUp] = useState(false);
+  const [isLoadingMoreDown, setIsLoadingMoreDown] = useState(false);
 
   useEffect(() => {
     let isCurrent = true;
@@ -56,10 +67,7 @@ const AnalysisDetail: React.FC = () => {
         } else if (type === RankingType.CLUSTERS) {
           setTitle(clusterName(Number(uuid)));
         }
-        const t0 = Date.now();
-        const response = await analysisService.getWholeSectorsDetailMetaData(type, uuid);
-        console.log(`API call took: ${Date.now() - t0}ms, items: ${response?.sectorsData?.length}`);
-
+        const response = await analysisService.getWholeSectorsDetailMetaData(type, uuid, safeOffset - offsetStarter < 0 ? 0 : safeOffset - offsetStarter, LIMIT, "");
         if (isCurrent) setSectorMetaData(response);
       } catch (e) {
         if (isCurrent) setHasError(true);
@@ -76,22 +84,17 @@ const AnalysisDetail: React.FC = () => {
     };
   }, [uuid, type]);
 
-  const filtered = useMemo(() => {
-    if (!sectorMetaData?.sectorsData) return [];
-    const q = search.toLowerCase();
-    return sectorMetaData.sectorsData.filter((p) =>
-      p.asset.display_name?.toLowerCase()?.includes(q)
-    );
-  }, [sectorMetaData, search]);
-
   const highlightIndex = useMemo(() => {
     if (safeOffset <= 0) return -1;
-    return filtered.findIndex((p) => getMainRankPosition(p, type).value === safeOffset);
-  }, [filtered, type, safeOffset]);
+    return sectorMetaData?.sectorsData.findIndex((p) => getMainRankPosition(p, type).value === safeOffset);
+  }, [type, safeOffset]);
 
   useEffect(() => {
-    if (highlightIndex < 0 || initialLoading || refetching || !sectorMetaData) return;
+    if(hasScrolledOnceRef.current)return
+    if (highlightIndex == undefined)return
+    if (highlightIndex < 0 || initialLoading || !sectorMetaData) return;
 
+    hasScrolledOnceRef.current = true
     const timer = setTimeout(() => {
       flatListRef.current?.scrollToIndex({
         index: highlightIndex,
@@ -99,19 +102,11 @@ const AnalysisDetail: React.FC = () => {
         viewPosition: 0.5,
       });
     }, 250);
-
+    setTimeout(() => {
+      isAutoScrollingRef.current = false;
+    }, 300);
     return () => clearTimeout(timer);
-  }, [highlightIndex, initialLoading, refetching, sectorMetaData]);
-
-  // Static structure avoids computing sizes on the fly
-  const getItemLayout = useCallback(
-    (_: unknown, index: number) => ({
-      length: FIXED_ROW_HEIGHT,
-      offset: FIXED_ROW_HEIGHT * index,
-      index,
-    }),
-    []
-  );
+  }, [highlightIndex, initialLoading, sectorMetaData]);
 
   const keyExtractor = useCallback((p: RankedAsset) => p.asset.uuid, []);
 
@@ -133,7 +128,104 @@ const AnalysisDetail: React.FC = () => {
     [type, highlightIndex]
   );
 
-  if (initialLoading || refetching || !sectorMetaData) {
+  const fetchMore = useCallback(
+    async (isBottom: boolean) => {
+      if (loadingRef.current) return;
+      if (isBottom && !hasMoreDown) return;
+      if (!isBottom && !hasMoreUp) return;
+      loadingRef.current = true;
+      isBottom ? setIsLoadingMoreDown(true) : setIsLoadingMoreUp(true);
+
+      let fetchOffset: number;
+      let fetchLimit = LIMIT;
+
+      if (isBottom) {
+        fetchOffset = bottomOffsetRef.current;
+      } else {
+        const currentTop = topOffsetRef.current;
+        if (currentTop <= 0) {
+          setHasMoreUp(false);
+          loadingRef.current = false;
+          setIsLoadingMoreUp(false);
+          return;
+        }
+        fetchOffset = Math.max(0, currentTop - LIMIT);
+        fetchLimit = currentTop - fetchOffset;
+      }
+
+      try {
+        if (!uuid) return;
+        const newData = await analysisService.getWholeSectorsDetailMetaData(type, uuid, fetchOffset, fetchLimit, search);
+
+        setSectorMetaData(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            sectorsData: isBottom
+              ? [...prev.sectorsData, ...newData.sectorsData]
+              : [...newData.sectorsData, ...prev.sectorsData]
+          };
+        });
+
+        if (isBottom) {
+          if (newData.sectorsData.length === 0) setHasMoreDown(false);
+          bottomOffsetRef.current += LIMIT;
+        } else {
+          topOffsetRef.current = fetchOffset;
+          if (fetchOffset <= 0 || newData.sectorsData.length === 0) setHasMoreUp(false);
+        }
+      } catch {
+        // toast erreur ici si besoin
+      } finally {
+        loadingRef.current = false;
+        setIsLoadingMoreUp(false);
+        setIsLoadingMoreDown(false);
+      }
+    },
+    [hasMoreDown, hasMoreUp, uuid, type, search]
+  );
+
+  const handleEndReached = useCallback(() => {
+    fetchMore(true);
+  }, [fetchMore]);
+
+  const handleStartReached = useCallback(() => {
+    if (isAutoScrollingRef.current) return;
+    fetchMore(false);
+  }, [fetchMore]);
+
+  useEffect(() => {
+    if (!didMountSearchRef.current) {
+      didMountSearchRef.current = true;
+      return; // skip le premier run, le fetch initial est déjà fait dans fetchData
+    }
+
+    const timeout = setTimeout(async () => {
+      setHasMoreDown(true);
+      setHasMoreUp(false);
+      bottomOffsetRef.current = 0;
+      topOffsetRef.current = 0;
+      loadingRef.current = true;
+      setIsLoadingMoreDown(true);
+
+      try {
+        if (!uuid) return;
+        const newData = await analysisService.getWholeSectorsDetailMetaData(type, uuid, 0, LIMIT, search);
+        setSectorMetaData(prev => (prev ? { ...prev, sectorsData: newData.sectorsData } : prev));
+        if (newData.sectorsData.length === 0) setHasMoreDown(false);
+        bottomOffsetRef.current = LIMIT;
+      } catch {
+        // gérer l'erreur si besoin
+      } finally {
+        loadingRef.current = false;
+        setIsLoadingMoreDown(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [search, uuid, type]);
+
+  if (initialLoading || !sectorMetaData) {
     return <Loading />;
   }
 
@@ -164,17 +256,26 @@ const AnalysisDetail: React.FC = () => {
       </View>
 
       <View style={styles.listWrapper}>
-        {!refetching && filtered.length === 0 ? (
+        {sectorMetaData.sectorsData.length === 0 ? (
           <Text style={styles.emptyText}>No stocks found</Text>
         ) : (
           <FlashList
             ref={flatListRef}
             style={styles.list}
-            data={filtered}
+            data={sectorMetaData.sectorsData}
             keyExtractor={keyExtractor}
-            scrollEnabled={!refetching}
             renderItem={renderItem}
-            removeClippedSubviews={true} // Crucial performance feature for flat lists
+            removeClippedSubviews={true}
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.5}
+            onStartReached={handleStartReached}
+            onStartReachedThreshold={1.5}
+            maintainVisibleContentPosition={{
+              autoscrollToTopThreshold: 0.1,
+              startRenderingFromBottom: false,
+            }}
+            ListFooterComponent={isLoadingMoreDown ? <Loading /> : null}
+            ListHeaderComponent={isLoadingMoreUp ? <Loading /> : null}
           />
         )}
       </View>
