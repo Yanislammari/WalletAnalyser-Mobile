@@ -273,24 +273,6 @@ const Metrics: React.FC = () => {
             </View>
           </View>
 
-          {/* ── Income ──────────────────────────────────────────────────────── */}
-          <View>
-            <SectionHeader title="Income" subtitle="Dividends received from your holdings" />
-            <View style={stylesMetrics.cardGrid}>
-              <View style={stylesMetrics.cardGridItemFull}>
-                <MetricCard
-                  label="Dividend Income"
-                  value={fmt(metrics.totalDividends, cy, 0)}
-                  subtitle={`Yield: ${metrics.dividendYield.toFixed(2)}%`}
-                  description="Total dividends received, converted to your target currency. Yield = dividends ÷ total invested."
-                  iconName={ICON.banknotes}
-                  positive={metrics.totalDividends > 0}
-                  neutral={metrics.totalDividends === 0}
-                />
-              </View>
-            </View>
-          </View>
-
           {/* ── Returns + Risk ──────────────────────────────────────────────── */}
           {hasSells ? (
             <>
@@ -395,16 +377,6 @@ const Metrics: React.FC = () => {
                   </View>
                   <View style={stylesMetrics.cardGridItem}>
                     <MetricCard
-                      label="Period"
-                      value={metrics.firstBuyDate ? formatPeriod(metrics.firstBuyDate) : "—"}
-                      subtitle={metrics.firstBuyDate ? `Since ${metrics.firstBuyDate}` : "No buys yet"}
-                      description="Time window of the selected period. The longer the period, the more reliable all other metrics become — especially CAGR, Sharpe, and Sortino."
-                      iconName={ICON.clock}
-                      neutral
-                    />
-                  </View>
-                  <View style={stylesMetrics.cardGridItem}>
-                    <MetricCard
                       label="Max Drawdown"
                       value={`-${metrics.maxDrawdown.toFixed(1)}%`}
                       subtitle={
@@ -418,19 +390,34 @@ const Metrics: React.FC = () => {
                       neutral={metrics.maxDrawdown > 0 && metrics.maxDrawdown < 10}
                     />
                   </View>
+                  {/* ── Income ──────────────────────────────────────────────────────── */}
+                  <View>
+                    <SectionHeader title="Income" subtitle="Dividends received from your holdings" />
+                    <View style={stylesMetrics.cardGrid}>
+                      <View style={stylesMetrics.cardGridItemFull}>
+                        <MetricCard
+                          label="Dividend Income"
+                          value={fmt(metrics.totalDividends, cy, 0)}
+                          subtitle={`Yield: ${metrics.dividendYield.toFixed(2)}%`}
+                          description="Total dividends received, converted to your target currency. Yield = dividends ÷ total invested."
+                          iconName={ICON.banknotes}
+                          positive={metrics.totalDividends > 0}
+                          neutral={metrics.totalDividends === 0}
+                        />
+                      </View>
+                    </View>
+                  </View>
+                  <View style={stylesMetrics.cardGridItem}>
+                    <MetricCard
+                      label="Period"
+                      value={metrics.firstBuyDate ? formatPeriod(metrics.firstBuyDate) : "—"}
+                      subtitle={metrics.firstBuyDate ? `Since ${metrics.firstBuyDate}` : "No buys yet"}
+                      description="Time window of the selected period. The longer the period, the more reliable all other metrics become — especially CAGR, Sharpe, and Sortino."
+                      iconName={ICON.clock}
+                      neutral
+                    />
+                  </View>
                 </View>
-              </View>
-
-              {/* Drawdown chart */}
-              <View style={stylesMetrics.chartCard}>
-                <SectionHeader title="Drawdown over time" />
-                <DrawdownChart data={metrics.monthlyData ?? []} />
-              </View>
-
-              {/* Monthly gain/loss chart */}
-              <View style={stylesMetrics.chartCard}>
-                <SectionHeader title="Monthly net gain / loss" />
-                <GainChart data={metrics.monthlyData ?? []} currency={cy} />
               </View>
             </>
           ) : (

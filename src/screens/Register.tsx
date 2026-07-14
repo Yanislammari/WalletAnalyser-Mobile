@@ -265,8 +265,9 @@ const Register: React.FC = () => {
                 <View style={LoginStyles.dividerLine} />
               </View>
 
-              {/* ── Google ── */}
-              <GoogleAuthButton />
+              {/* ── Google ── 
+                <GoogleAuthButton />
+              */}
 
               <TouchableOpacity
                 style={LoginStyles.signupBtn}

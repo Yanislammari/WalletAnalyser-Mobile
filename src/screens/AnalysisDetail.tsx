@@ -43,7 +43,8 @@ const AnalysisDetail: React.FC = () => {
   const LIMIT = 50;
   const offsetStarter = 25;
   const topOffsetRef = useRef(safeOffset - offsetStarter);
-  const bottomOffsetRef = useRef(safeOffset + offsetStarter)
+  const bottomOffsetRef = useRef(safeOffset < offsetStarter ? LIMIT : safeOffset + offsetStarter);
+
   const loadingRef = useRef(false);
   const [hasMoreUp, setHasMoreUp] = useState(true);
   const [hasMoreDown, setHasMoreDown] = useState(true);
@@ -86,8 +87,9 @@ const AnalysisDetail: React.FC = () => {
 
   const highlightIndex = useMemo(() => {
     if (safeOffset <= 0) return -1;
-    return sectorMetaData?.sectorsData.findIndex((p) => getMainRankPosition(p, type).value === safeOffset);
-  }, [type, safeOffset]);
+    if (!sectorMetaData?.sectorsData) return -1;
+    return sectorMetaData.sectorsData.findIndex((p) => getMainRankPosition(p, type).value === safeOffset);
+  }, [type, safeOffset, sectorMetaData]);
 
   useEffect(() => {
     if(hasScrolledOnceRef.current)return

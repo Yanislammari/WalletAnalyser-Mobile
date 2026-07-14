@@ -159,8 +159,10 @@ const Login: React.FC = () => {
                 <View style={LoginStyles.dividerLine} />
               </View>
 
-              {/* Google auth */}
-              <GoogleAuthButton />
+              {/* Google auth
+                <GoogleAuthButton />
+                */
+              }  
 
               {/* Sign up */}
               <TouchableOpacity

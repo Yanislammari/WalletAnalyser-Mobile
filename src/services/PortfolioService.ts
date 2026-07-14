@@ -14,6 +14,7 @@ import type { UpdateAssetDividendPayload } from "../payloads/UpdateAssetDividend
 import type { AssetCountResponse } from "../responses/AssetCountResponse";
 import type { PortfolioTotalResponse } from "../responses/PortfolioTotalResponse";
 import type { MetricResponse } from "../responses/MetricResponse";
+import type { DashboardDataResponse } from "../responses/DashboardDataResponse";
 
 class PortfolioService extends BaseService {
   private static instance: PortfolioService;
@@ -161,8 +162,9 @@ class PortfolioService extends BaseService {
     return res.availableShares;
   }
 
-  public async getAverageBuyPrice(portfolioId: string, assetId: string, date: string, currencyId : string): Promise<number | null> {
-    const params = new URLSearchParams({ assetId, date, currencyId});
+  public async getAverageBuyPrice(portfolioId: string, assetId: string, date: string, currencyId?: string): Promise<number | null> {
+    const params = new URLSearchParams({ assetId, date });
+    if (currencyId) params.append("currencyId", currencyId);
     const res = await this.request<{ averageBuyPrice: number | null }>(`/portfolio/${portfolioId}/average-buy-price?${params}`, { method: "GET" });
     return res.averageBuyPrice;
   }
@@ -195,6 +197,10 @@ class PortfolioService extends BaseService {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+  }
+
+  public async getDashboardData(portfolioId: string): Promise<DashboardDataResponse> {
+    return this.request<DashboardDataResponse>(`/portfolio/${portfolioId}/dashboard`, { method: "GET" });
   }
 
   public async getMetrics(portfolioId: string, fromDate?: string): Promise<MetricResponse> {

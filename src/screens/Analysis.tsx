@@ -22,8 +22,6 @@ import { ScrollView } from "react-native-gesture-handler";
 
 type NavigationProp = NativeStackNavigationProp<AnalysisStackParamList>;
 
-const LIMIT = 50;
-
 const Analysis: React.FC = () => {
   const analysisService = AnalysisService.getInstance();
   const navigation = useNavigation<NavigationProp>();
@@ -39,6 +37,7 @@ const Analysis: React.FC = () => {
   const didMountRef = useRef(false);
   const didMountSearchRef = useRef(false);
   const [refreshing, setRefreshing] = useState(false);
+  const LIMIT = 50;
 
   const bottomOffsetRef = useRef(0);
   const loadingRef = useRef(false);
@@ -246,7 +245,7 @@ const Analysis: React.FC = () => {
       );
     }
     return (
-      <View style={[styles.container, styles.flex1]}>
+      <View style={[styles.flashlistContainer, styles.flex1]}>
         {renderHeader()}
         {userStocks == null || userStocks.sectorsData.length === 0 ? (
           <Text style={styles.emptyText}>No stocks found</Text>
@@ -308,6 +307,7 @@ const Analysis: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { padding: 16, paddingBottom: 40 },
+  flashlistContainer: { padding: 16, paddingBottom: 0},
   flex1: { flex: 1 },
   headerRow: { flexDirection: "column", gap: 12, marginBottom: 16 },
   headerTitle: { fontSize: 20, fontWeight: "700", color: "#111827" },

@@ -36,8 +36,11 @@ abstract class BaseService {
       if (isAuthError) {
         DeviceEventEmitter.emit(AUTH_LOGOUT_EVENT);
         throw new Error(error.message || "Your session has expired. Please login again.");
-      } else if (isSubscribeError) {
-        throw new Error("You need to subscribe to access this feature.");
+      } else if(isSubscribeError) {
+        throw new Error(error.message || "You need to subscribe to access this feature.");
+      }
+      if (res.status === 401) {
+        DeviceEventEmitter.emit("auth:unauthorized");
       }
       throw new Error(error.message || "Request failed");
     }
