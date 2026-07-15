@@ -1,23 +1,21 @@
 import type React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, type TextStyle } from "react-native";
 import type { MetricUI } from "../../models/UI/MetricUI";
-
-const C = {
-  gray400: "#9ca3af",
-  gray800: "#1f2937",
-};
+import { C } from "../../utils/color";
 
 interface MetricItemProps {
   metric: MetricUI;
+  labelStyle?: TextStyle;
+  valueStyle?: TextStyle;
 }
 
-const MetricItem: React.FC<MetricItemProps> = ({ metric }) => {
+const MetricItem: React.FC<MetricItemProps> = ({ metric, labelStyle, valueStyle }) => {
   return (
     <View style={styles.item}>
-      <Text style={styles.value} numberOfLines={1}>
+      <Text style={[styles.value, valueStyle]} numberOfLines={1}>
         {metric.value}
       </Text>
-      <Text style={styles.label} numberOfLines={1}>
+      <Text style={[styles.label, labelStyle]} numberOfLines={1}>
         {metric.key}
       </Text>
     </View>

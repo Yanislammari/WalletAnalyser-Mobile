@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  StyleSheet,
   Animated,
   RefreshControl,
 } from "react-native";
@@ -16,11 +15,11 @@ import PortfolioService from "../services/PortfolioService";
 import DmStatCard from "../components/dashboard/DmStatCard";
 import DmLineChart from "../components/dashboard/DmLineChart";
 import SectorBreakdown from "../components/dashboard/SectorBreakdown";
-import AllocationBreakdown from "../components/dashboard/AllocationBreakdown"; // <-- Ajout de l'import
+import AllocationBreakdown from "../components/dashboard/AllocationBreakdown";
 import type { DmStatUI } from "../models/UI/DmStatUI";
 import type { MetricResponse } from "../responses/MetricResponse";
 import type { PortfolioTotalResponse } from "../responses/PortfolioTotalResponse";
-import { fmt, fmtPct } from "../utils/helper";
+import { fmt, fmtPct, formatPeriod } from "../utils/helper";
 import NoPortfolioSelected from "../components/card/NoPortfolioSelected";
 import { C } from "../utils/color";
 import { NavBarParamList, PortfolioStackParamList } from "../nav/NavBar";
@@ -30,6 +29,7 @@ import ErrorCardInApp from "../components/card/ErrorCard";
 import Icon from "react-native-vector-icons/Ionicons";
 import MetricStrip from "../components/dashboard/MetricStrip";
 import { DashboardDataResponse } from "../responses/DashboardDataResponse";
+import { dashboardStyles } from '../styles/Dashboard_style';
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -47,7 +47,7 @@ const Skeleton: React.FC<{ style?: any }> = ({ style }) => {
     return () => loop.stop();
   }, [opacity]);
 
-  return <Animated.View style={[styles.skeleton, style, { opacity }]} />;
+  return <Animated.View style={[dashboardStyles.skeleton, style, { opacity }]} />;
 };
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -59,7 +59,7 @@ type DashboardNavigationProp = CompositeNavigationProp<
 const DashboardPage: React.FC = () => {
   const navigation = useNavigation<DashboardNavigationProp>();
   const portfolioService = PortfolioService.getInstance();
-  const { user } = useAuth(); // NOTE : Récupère l'information "isPro" ou équivalent ici si disponible
+  const { user } = useAuth();
   const { selectedPortfolio } = usePortfolio();
   const [metrics, setMetrics] = useState<MetricResponse | null>(null);
   const [total, setTotal] = useState<PortfolioTotalResponse | null>(null);
@@ -75,12 +75,8 @@ const DashboardPage: React.FC = () => {
     setError(null);
 
     const portfolioId = selectedPortfolio.id;
-
-    // Préparation des requêtes
     const fetchTotal = portfolioService.getPortfolioTotal(portfolioId).catch(() => null);
     const fetchDashboard = portfolioService.getDashboardData(portfolioId).catch(() => null);
-    
-    // On ne récupère les metrics que si l'utilisateur est Pro pour éviter l'erreur 403
     const fetchMetrics = isPro
       ? portfolioService.getMetrics(portfolioId).catch(() => null)
       : Promise.resolve(null);
@@ -144,13 +140,13 @@ const DashboardPage: React.FC = () => {
     ? [
         {
           label: "Portfolio value",
-          value: total ? fmt(total.totalValue, cy) : "—",
+          value: fmt(metrics.portfolioMarketValue, cy, 0),
           delta: `${fmtPct(metrics.gainPercent)} all time`,
           up: metrics.gain >= 0,
         },
         {
           label: "Net gain",
-          value: fmt(metrics.gain, cy),
+          value: fmt(metrics.gainMtm, cy, 0),
           delta: `${fmtPct(metrics.gainPercent)} on invested`,
           up: metrics.gain >= 0,
         },
@@ -173,20 +169,20 @@ const DashboardPage: React.FC = () => {
   return (
     <>
       <ScrollView
-        style={styles.screen}
-        contentContainerStyle={styles.screenContent}
+        style={dashboardStyles.screen}
+        contentContainerStyle={dashboardStyles.screenContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
         {/* Header */}
-        <View style={styles.headerRow}>
+        <View style={dashboardStyles.headerRow}>
           <View>
-            <Text style={styles.title}>
+            <Text style={dashboardStyles.title}>
               {greeting}
               {user?.firstName ? `, ${user.firstName}` : ""}
             </Text>
-            <Text style={styles.subtitle}>Here's what's happening with your portfolio today.</Text>
+            <Text style={dashboardStyles.subtitle}>Here's what's happening with your portfolio today.</Text>
           </View>
         </View>
 
@@ -205,15 +201,15 @@ const DashboardPage: React.FC = () => {
         {/* Stat cards */}
         {selectedPortfolio &&
           (loading ? (
-            <View style={styles.statGrid}>
+            <View style={dashboardStyles.statGrid}>
               {[...Array(4)].map((_, i) => (
-                <Skeleton key={i} style={styles.statSkeleton} />
+                <Skeleton key={i} style={dashboardStyles.statSkeleton} />
               ))}
             </View>
           ) : (
-            <View style={styles.statGrid}>
+            <View style={dashboardStyles.statGrid}>
               {dashStats.map((stat) => (
-                <View key={stat.label} style={styles.statCard}>
+                <View key={stat.label} style={dashboardStyles.statCard}>
                   <DmStatCard stat={stat} />
                 </View>
               ))}
@@ -224,15 +220,15 @@ const DashboardPage: React.FC = () => {
         {selectedPortfolio &&
           (loading ? (
             <View style={{ gap: 16 }}>
-              <Skeleton style={styles.chartSkeleton} />
-              <Skeleton style={styles.chartSkeleton} />
+              <Skeleton style={dashboardStyles.chartSkeleton} />
+              <Skeleton style={dashboardStyles.chartSkeleton} />
             </View>
           ) : dashboardData && (
               <View style={{ gap: 16 }}>
-                <View style={styles.panelCard}>
+                <View style={dashboardStyles.panelCard}>
                   <DmLineChart data={dashboardData.monthlyData} currency={cy} />
                 </View>
-                <View style={styles.panelCard}>
+                <View style={dashboardStyles.panelCard}>
                   <SectorBreakdown holdings={dashboardData.topHoldings} />
                 </View>
               </View>
@@ -242,20 +238,20 @@ const DashboardPage: React.FC = () => {
         {selectedPortfolio && (
           loading ? (
             <View style={{ gap: 16 }}>
-              <Skeleton style={styles.breakdownSkeleton} />
-              <Skeleton style={styles.breakdownSkeleton} />
+              <Skeleton style={dashboardStyles.breakdownSkeleton} />
+              <Skeleton style={dashboardStyles.breakdownSkeleton} />
             </View>
           ) : (
             dashboardData && (dashboardData.sectorBreakdown.length > 0 || dashboardData.countryBreakdown.length > 0) && (
               <View style={{ gap: 16 }}>
-                  <View style={styles.panelCard}>
+                  <View style={dashboardStyles.panelCard}>
                     <AllocationBreakdown
                       title="Sector exposure"
                       items={dashboardData.sectorBreakdown}
                       currency={cy}
                     />
                   </View>
-                  <View style={styles.panelCard}>
+                  <View style={dashboardStyles.panelCard}>
                     <AllocationBreakdown
                       title="Geographic exposure"
                       items={dashboardData.countryBreakdown}
@@ -270,25 +266,30 @@ const DashboardPage: React.FC = () => {
         {selectedPortfolio &&
           (isPro ? (
             loading ? (
-              <Skeleton style={styles.stripSkeleton} />
+              <Skeleton style={dashboardStyles.stripSkeleton} />
             ) : (
               metrics &&
               metrics.totalInvested > 0 && (
-                <View style={styles.panelCard}>
-                  <Text style={styles.stripLabel}>Performance metrics</Text>
-                  {<MetricStrip metrics={metrics} />}
+              <View style={dashboardStyles.panelCard}>
+                <View style={dashboardStyles.titleRow}>
+                  <Text style={dashboardStyles.panelTitle}>Performance metrics</Text>
+                  <Text style={dashboardStyles.panelPeriod}>
+                    {metrics.firstBuyDate ? formatPeriod(metrics.firstBuyDate) : "N/A"}
+                  </Text>
                 </View>
+                <MetricStrip metrics={metrics} />
+              </View>
               )
             )
           ) : (
-            <View style={[styles.panelCard, styles.proLockContainer]}>
-              <View style={styles.proLockLeft}>
-                <View style={styles.proIconBadge}>
+            <View style={[dashboardStyles.panelCard, dashboardStyles.proLockContainer]}>
+              <View style={dashboardStyles.proLockLeft}>
+                <View style={dashboardStyles.proIconBadge}>
                   <Icon name="lock-closed-outline" size={16} color={C.purple600} />
                 </View>
-                <View style={styles.proTextContainer}>
-                  <Text style={styles.stripLabel}>Performance metrics</Text>
-                  <Text style={styles.proSubtitle}>
+                <View style={dashboardStyles.proTextContainer}>
+                  <Text style={dashboardStyles.stripLabel}>Performance metrics</Text>
+                  <Text style={dashboardStyles.proSubtitle}>
                     CAGR, TWR, XIRR, Sharpe ratio, max drawdown and more — Pro only
                   </Text>
                 </View>
@@ -298,11 +299,11 @@ const DashboardPage: React.FC = () => {
 
         {/* Empty state — no transactions */}
         {!loading && metrics && metrics.totalInvested === 0 && (
-          <View style={styles.noTxnBox}>
-            <Text style={styles.noTxnTitle}>No transactions yet</Text>
-            <Text style={styles.noTxnSubtitle}>Add your first buy to start tracking your portfolio.</Text>
+          <View style={dashboardStyles.noTxnBox}>
+            <Text style={dashboardStyles.noTxnTitle}>No transactions yet</Text>
+            <Text style={dashboardStyles.noTxnSubtitle}>Add your first buy to start tracking your portfolio.</Text>
             <TouchableOpacity
-              style={styles.noTxnButton}
+              style={dashboardStyles.noTxnButton}
               onPress={() =>
                 selectedPortfolio &&
                 navigation.navigate("Portfolio", {
@@ -311,7 +312,7 @@ const DashboardPage: React.FC = () => {
                 })
               }
             >
-              <Text style={styles.noTxnButtonText}>Go to Transactions</Text>
+              <Text style={dashboardStyles.noTxnButtonText}>Go to Transactions</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -319,101 +320,5 @@ const DashboardPage: React.FC = () => {
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: C.white },
-  screenContent: { padding: 16, gap: 20, paddingBottom: 40 },
-
-  headerRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
-  title: { color: C.gray900, fontSize: 20, fontWeight: "700" },
-  subtitle: { color: C.gray500, fontSize: 13, marginTop: 2 },
-
-  statGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  statCard: {
-    width: "47%",
-    backgroundColor: C.white,
-    borderWidth: 1,
-    borderColor: C.gray100,
-    borderRadius: 16,
-    padding: 14,
-    shadowColor: "#000",
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-  },
-  statSkeleton: { width: "47%", height: 96 },
-
-  panelCard: {
-    backgroundColor: C.white,
-    borderWidth: 1,
-    borderColor: C.gray100,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-  },
-  chartSkeleton: { height: 208 },
-  breakdownSkeleton: { height: 200 },
-  stripSkeleton: { height: 80 },
-  stripLabel: { color: C.gray400, fontSize: 10, textTransform: "uppercase", letterSpacing: 1, fontWeight: "500", marginBottom: 2 },
-
-  // Styles Pro / Lock Section
-  proLockContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  proLockLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    flex: 1,
-  },
-  proIconBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: C.purple50,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  proTextContainer: {
-    flex: 1,
-  },
-  proSubtitle: {
-    color: C.gray500,
-    fontSize: 11,
-    marginTop: 2,
-  },
-  proUpgradeButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: C.purple600,
-    borderRadius: 12,
-  },
-  proUpgradeButtonText: {
-    color: C.white,
-    fontSize: 12,
-    fontWeight: "600",
-  },
-
-  noTxnBox: {
-    backgroundColor: C.white,
-    borderWidth: 1,
-    borderColor: C.gray100,
-    borderRadius: 16,
-    padding: 32,
-    alignItems: "center",
-  },
-  noTxnTitle: { color: C.gray600, fontWeight: "600", fontSize: 15 },
-  noTxnSubtitle: { color: C.gray400, fontSize: 13, marginTop: 4, textAlign: "center" },
-  noTxnButton: { marginTop: 16, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: C.purple600, borderRadius: 12 },
-  noTxnButtonText: { color: C.white, fontSize: 13, fontWeight: "600" },
-
-  skeleton: { backgroundColor: C.gray100, borderRadius: 12 },
-});
 
 export default DashboardPage;

@@ -15,6 +15,8 @@ export interface MonthlyDataPoint {
   month: string;
   netGain: number;
   invested: number;
+  netCostBasis: number;
+  marketValue: number;
 }
 
 export interface MonthlyTwrPoint {

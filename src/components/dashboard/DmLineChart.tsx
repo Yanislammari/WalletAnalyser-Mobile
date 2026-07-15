@@ -14,7 +14,6 @@ import Svg, {
 import type { MonthlyDataPoint } from "../../responses/MetricResponse";
 import { C } from "../../utils/color";
 
-
 const PERIODS = ["3M", "6M", "1Y", "All"] as const;
 type Period = typeof PERIODS[number];
 const PERIOD_MONTHS: Record<Period, number | null> = { "3M": 3, "6M": 6, "1Y": 12, All: null };
@@ -28,7 +27,7 @@ const DmLineChart: React.FC<DmLineChartProps> = ({ data, currency }) => {
   const [period, setPeriod] = useState<Period>("1Y");
   const [hovered, setHovered] = useState<number | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
-  
+
   // Track the absolute screen X coordinate of the container
   const containerPageX = useRef<number>(0);
 
@@ -36,9 +35,6 @@ const DmLineChart: React.FC<DmLineChartProps> = ({ data, currency }) => {
     const n = PERIOD_MONTHS[period];
     return n ? data.slice(-n) : data;
   }, [data, period]);
-
-  // Fallback to the latest data point (closest to today) if nothing is hovered
-  const activeIdx = hovered !== null ? hovered : sliced.length - 1;
 
   const fmt = (v: number) =>
     new Intl.NumberFormat("fr-FR", { style: "currency", currency, maximumFractionDigits: 0 }).format(v);
@@ -94,9 +90,30 @@ const DmLineChart: React.FC<DmLineChartProps> = ({ data, currency }) => {
   const cW = W - PAD.left - PAD.right;
   const cH = totalH - PAD.top - PAD.bottom;
 
-  const portfolioVals = sliced.map((d) => d.invested + d.netGain);
-  const minV = Math.min(...portfolioVals);
-  const maxV = Math.max(...portfolioVals);
+  // ── Real portfolio value from historical prices ────────────────────────────
+  // marketValue = Σ(shares × price) from backend. Forward-fill when a month has
+  // no price data (marketValue === 0 but holdings exist).
+  let lastKnown = 0;
+  const portfolioVals = sliced.map((d) => {
+    if (d.marketValue > 0) {
+      lastKnown = d.marketValue;
+      return d.marketValue;
+    }
+    // No holdings (fully sold or nothing bought yet) → 0
+    if (d.netCostBasis === 0) {
+      lastKnown = 0;
+      return 0;
+    }
+    // Holdings exist but no price this month → forward-fill
+    return lastKnown > 0 ? lastKnown : d.netCostBasis;
+  });
+
+  // Fallback to the latest data point (closest to today) if nothing is hovered
+  const activeIdx = hovered !== null ? hovered : portfolioVals.length - 1;
+
+  const allVals = [...portfolioVals];
+  const minV = Math.min(...allVals);
+  const maxV = Math.max(...allVals);
   const range = maxV - minV || 1;
   const pad = range * 0.1;
 
@@ -114,8 +131,9 @@ const DmLineChart: React.FC<DmLineChartProps> = ({ data, currency }) => {
     "Z",
   ].join(" ");
 
-  const lastGain = sliced[sliced.length - 1].netGain;
-  const lineColor = lastGain >= 0 ? C.purple700 : C.rose500;
+  const currentVal = portfolioVals[portfolioVals.length - 1];
+  const firstVal = portfolioVals[0];
+  const lineColor = currentVal >= firstVal ? C.purple700 : C.rose500;
 
   const yTicks = [minV, (minV + maxV) / 2, maxV];
 
@@ -123,15 +141,15 @@ const DmLineChart: React.FC<DmLineChartProps> = ({ data, currency }) => {
   const xIdxSet = new Set<number>([0, sliced.length - 1]);
   for (let i = xStep; i < sliced.length - 1; i += xStep) xIdxSet.add(i);
 
-  // Optimized Touch Handler: Only updates state when crossing data thresholds
+  // Optimized touch handler: only updates state when crossing data thresholds
   const handleTouch = (pageX: number) => {
     if (!containerWidth || !containerPageX.current) return;
-    
+
     const localX = pageX - containerPageX.current;
     const xInViewBox = (localX / containerWidth) * W;
     const raw = ((xInViewBox - PAD.left) / cW) * (sliced.length - 1);
     const newIdx = Math.max(0, Math.min(sliced.length - 1, Math.round(raw)));
-    
+
     // Prevent repetitive state sets on the same item during granular movements
     if (newIdx !== hovered) {
       setHovered(newIdx);
@@ -146,11 +164,7 @@ const DmLineChart: React.FC<DmLineChartProps> = ({ data, currency }) => {
           <RNText style={styles.headerLabel}>Portfolio value over time</RNText>
           {activeIdx !== null && sliced[activeIdx] && (
             <RNText style={styles.hoverInfo}>
-              {fmtMonth(sliced[activeIdx].month)} · {fmt(sliced[activeIdx].invested + sliced[activeIdx].netGain)}{" "}
-              <RNText style={{ color: sliced[activeIdx].netGain >= 0 ? C.emerald600 : C.rose500 }}>
-                ({sliced[activeIdx].netGain >= 0 ? "+" : ""}
-                {fmt(sliced[activeIdx].netGain)})
-              </RNText>
+              {fmtMonth(sliced[activeIdx].month)} · {fmt(portfolioVals[activeIdx])}
             </RNText>
           )}
         </View>
@@ -158,26 +172,25 @@ const DmLineChart: React.FC<DmLineChartProps> = ({ data, currency }) => {
       </View>
 
       {/* Chart container with capture logic and absolute layouts */}
-        <View
-          onLayout={(e) => {
-            setContainerWidth(e.nativeEvent.layout.width);
-            e.currentTarget.measure((x, y, width, height, pageX) => {
-              containerPageX.current = pageX;
-            });
-          }}
-          onStartShouldSetResponderCapture={() => true}
-          onMoveShouldSetResponderCapture={() => true}
-          
-          onStartShouldSetResponder={() => true}
-          onMoveShouldSetResponder={() => true}
-          onResponderGrant={(e) => {
-            handleTouch(e.nativeEvent.pageX);
-          }}
-          onResponderMove={(e) => {
-            handleTouch(e.nativeEvent.pageX);
-          }}
-          onResponderTerminationRequest={() => false}
-        >
+      <View
+        onLayout={(e) => {
+          setContainerWidth(e.nativeEvent.layout.width);
+          e.currentTarget.measure((x, y, width, height, pageX) => {
+            containerPageX.current = pageX;
+          });
+        }}
+        onStartShouldSetResponderCapture={() => true}
+        onMoveShouldSetResponderCapture={() => true}
+        onStartShouldSetResponder={() => true}
+        onMoveShouldSetResponder={() => true}
+        onResponderGrant={(e) => {
+          handleTouch(e.nativeEvent.pageX);
+        }}
+        onResponderMove={(e) => {
+          handleTouch(e.nativeEvent.pageX);
+        }}
+        onResponderTerminationRequest={() => false}
+      >
         <Svg viewBox={`0 0 ${W} ${totalH}`} style={{ width: "100%", aspectRatio: W / totalH }}>
           <Defs>
             <LinearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
@@ -244,7 +257,7 @@ const DmLineChart: React.FC<DmLineChartProps> = ({ data, currency }) => {
       <View style={styles.legendRow}>
         <View style={styles.legendItem}>
           <View style={[styles.legendSwatch, { backgroundColor: lineColor }]} />
-          <RNText style={styles.legendText}>Net returns</RNText>
+          <RNText style={styles.legendText}>Estimated portfolio value</RNText>
         </View>
       </View>
     </View>

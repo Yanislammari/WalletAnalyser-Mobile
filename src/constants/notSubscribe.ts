@@ -1,0 +1,1 @@
+export const notSubscribeError = "You need to subscribe to access this feature."

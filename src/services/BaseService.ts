@@ -2,6 +2,7 @@ import { DeviceEventEmitter } from "react-native";
 import { BACKEND_BASE_URL } from "../constants/env";
 import { AUTH_LOGOUT_EVENT, STORAGE_KEYS } from "../providers/AuthProvider";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { notSubscribeError } from "../constants/notSubscribe";
 
 abstract class BaseService {
   protected baseUrl: string;
@@ -37,7 +38,7 @@ abstract class BaseService {
         DeviceEventEmitter.emit(AUTH_LOGOUT_EVENT);
         throw new Error(error.message || "Your session has expired. Please login again.");
       } else if(isSubscribeError) {
-        throw new Error(error.message || "You need to subscribe to access this feature.");
+        throw new Error(notSubscribeError);
       }
       if (res.status === 401) {
         DeviceEventEmitter.emit("auth:unauthorized");

@@ -12,6 +12,7 @@ import ForgottenPassword from './src/screens/ForgottenPassword';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import NavBar from './src/nav/NavBar';
 import { PortfolioProvider } from './src/providers/PortfolioProvider';
+import FirstScreen from './src/components/first_screen/FirstScreen';
 
 enableScreens();
 const Stack = createNativeStackNavigator();
@@ -29,7 +30,11 @@ function AppNavigator() {
 }
 
 const RootNavigator = () => {
-  const { isAuthenticated } = useAuth(); // your hook
+  const { isAuthenticated, isAuthLoading } = useAuth();
+
+  if (isAuthLoading) {
+    return <FirstScreen />;
+  }
 
   return (
     <Stack.Navigator initialRouteName={isAuthenticated ? "App" : "Login"}>

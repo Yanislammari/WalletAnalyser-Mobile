@@ -1,26 +1,12 @@
-import type React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import MetricItem from "./MetricItem";
 import type { MetricUI } from "../../models/UI/MetricUI";
 import type { MetricResponse } from "../../responses/MetricResponse";
+import React from "react";
 
 interface MetricStripProps {
   metrics: MetricResponse;
 }
-
-const formatPeriod = (firstBuyDate: string | null): string => {
-  if (!firstBuyDate) return "—";
-  const start = new Date(firstBuyDate);
-  const now = new Date();
-  const totalDays = Math.round((now.getTime() - start.getTime()) / 86_400_000);
-  if (totalDays <= 0) return "Today";
-  if (totalDays < 7) return `${totalDays}d`;
-  if (totalDays < 30) return `${Math.floor(totalDays / 7)}w`;
-  if (totalDays < 365) return `${Math.round(totalDays / 30.44)}mo`;
-  const y = Math.floor(totalDays / 365.25);
-  const m = Math.round((totalDays - Math.floor(y * 365.25)) / 30.44);
-  return m > 0 ? `${y}y ${m}m` : `${y}y`;
-};
 
 const MetricStrip: React.FC<MetricStripProps> = ({ metrics }) => {
   const fmtPct = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
@@ -31,33 +17,62 @@ const MetricStrip: React.FC<MetricStripProps> = ({ metrics }) => {
       maximumFractionDigits: 0,
     }).format(v);
 
-  const items: MetricUI[] = [
-    { key: "CAGR", value: `${fmtPct(metrics.cagr)} / yr` },
-    { key: "Volatility", value: `${metrics.volatility.toFixed(1)}%` },
-    { key: "Sharpe", value: metrics.sharpeRatio.toFixed(2) },
-    { key: "Div. yield", value: `${metrics.dividendYield.toFixed(1)}%` },
+  // Headline stats — 2x2, more horizontal room per item
+  const topItems: MetricUI[] = [
     { key: "Gain", value: fmtPct(metrics.gainPercent) },
+    { key: "CAGR", value: `${fmtPct(metrics.cagr)} / yr` },
+    { key: "Sharpe", value: metrics.sharpeRatio.toFixed(2) },
+    { key: "Volatility", value: `${metrics.volatility.toFixed(1)}%` }
+  ];
+
+  // Secondary stats — single row at the bottom, dark contrast block
+  const bottomItems: MetricUI[] = [
+    { key: "Div. yield", value: `${metrics.dividendYield.toFixed(1)}%` },
     { key: "Dividends", value: fmt(metrics.totalDividends) },
     { key: "Returned", value: fmt(metrics.totalReturned) },
-    { key: "Period", value: formatPeriod(metrics.firstBuyDate) },
   ];
 
   return (
-    <View style={styles.grid}>
-      {items.map((m) => (
-        <View key={m.key} style={styles.gridItem}>
-          <MetricItem metric={m} />
-        </View>
-      ))}
+    <View style={styles.container}>
+      <View style={styles.topGrid}>
+        {topItems.map((m) => (
+          <View key={m.key} style={styles.topItem}>
+            <MetricItem metric={m} />
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.bottomRow}>
+        {bottomItems.map((m, i) => (
+          <View key={m.key} style={[styles.bottomItem, i > 0 && styles.bottomItemDivider]}>
+            <MetricItem metric={m} labelStyle={styles.bottomLabel} valueStyle={styles.bottomValue} />
+          </View>
+        ))}
+      </View>
     </View>
   );
 };
 
-// 4 columns on phone (matches the web version's default grid-cols-4;
-// the md:grid-cols-8 tablet variant is dropped since this is a phone screen).
 const styles = StyleSheet.create({
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  gridItem: { width: "22%" },
+  container: { gap: 12 },
+  topGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  topItem: { width: "47%" },
+
+  bottomRow: {
+    flexDirection: "row",
+    backgroundColor: "#111827",
+    borderRadius: 12,
+    paddingVertical: 8,
+    marginHorizontal: -16,   // bleeds past panelCard's 16px padding to the edges
+    paddingHorizontal: 16,   // ...then re-adds it internally so items stay aligned
+  },
+  bottomItem: { flex: 1, alignItems: "center" },
+  bottomItemDivider: {
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderLeftColor: "rgba(255,255,255,0.15)",
+  },
+  bottomLabel: { color: "rgba(255,255,255,0.6)" },
+  bottomValue: { color: "#ffffff" },
 });
 
 export default MetricStrip;

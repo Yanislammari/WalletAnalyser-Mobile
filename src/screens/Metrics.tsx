@@ -33,6 +33,7 @@ import ErrorCardInApp from "../components/card/ErrorCard";
 import { C } from "../utils/color";
 import { PeriodPreset, presetToFromDate, PRESET_LABELS, PRESET_MONTHS, fmt, fmtPct, formatPeriod, pos } from "../components/metrics/helper";
 import { trackButtonClick } from "../utils/FirebaseTracking";
+import { notSubscribeError } from "../constants/notSubscribe";
 
 interface MetricCardProps {
   label: string;
@@ -118,7 +119,7 @@ const Metrics: React.FC = () => {
         if (period === "ALL" && m.firstBuyDate) setPortfolioStartDate(m.firstBuyDate);
       })
       .catch((e) => {
-        if(e.message == 'You need to subscribe to access this feature.') {
+        if(e.message == notSubscribeError) {
           trackButtonClick("Metrics_not_subscribe");
           setError(e.message);
         } else {
@@ -194,7 +195,7 @@ const Metrics: React.FC = () => {
         <ErrorCardInApp
           iconBg="#f3f4f6"
           icon={<Icon name="close-circle-outline" size={32} color="#9ca3af" />}
-          title=""
+          title={error == notSubscribeError ? "Premium content" : "An error occured"}
           description={error}
         />
       )}
@@ -280,23 +281,23 @@ const Metrics: React.FC = () => {
                 <SectionHeader title="Returns" subtitle="How much value you created from your investments" />
                 <View style={stylesMetrics.cardGrid}>
                   <View style={stylesMetrics.cardGridItem}>
-                    <MetricCard
-                      label="Realized P&L"
-                      value={fmtPct(metrics.gainPercent)}
-                      subtitle={`${metrics.gain >= 0 ? "+" : ""}${fmt(metrics.gain, cy, 0)} · cash flows only`}
-                      description="Return on capital computed from realized cash flows only: (sells + dividends − buys) / buys × 100. Does NOT include the current market value of positions still held."
-                      iconName={pos(metrics.gainPercent) ? ICON.trendingUp : ICON.trendingDown}
-                      positive={pos(metrics.gainPercent)}
+                  <MetricCard
+                    label="Total P&L"
+                    value={fmtPct(metrics.portfolioMarketValue > 0 ? metrics.gainPercentMtm : metrics.gainPercent)}
+                    subtitle={`${(metrics.portfolioMarketValue > 0 ? metrics.gainMtm : metrics.gain) >= 0 ? "+" : ""}${fmt(metrics.portfolioMarketValue > 0 ? metrics.gainMtm : metrics.gain, cy, 0)}${metrics.portfolioMarketValue > 0 ? " · incl. unrealized" : " · cash flows only"}`}
+                    description="Total return on invested capital. When open positions exist, includes current market value of held shares (mark-to-market). Otherwise computed from realized cash flows only."
+                    iconName={pos(metrics.gainPercent) ? ICON.trendingUp : ICON.trendingDown}
+                      positive={pos(metrics.portfolioMarketValue > 0 ? metrics.gainPercentMtm : metrics.gainPercent)}
                     />
                   </View>
                   <View style={stylesMetrics.cardGridItem}>
                     <MetricCard
                       label="CAGR"
-                      value={fmtPct(metrics.cagr)}
+                      value={fmtPct(metrics.portfolioMarketValue > 0 ? metrics.cagrMtm : metrics.cagr)}
                       subtitle="per year, compounded"
                       description="Compound Annual Growth Rate — the equivalent fixed annual return that would take your invested capital to the realized return over the same period. Meaningful only with 1+ year of history."
                       iconName={ICON.chartBar}
-                      positive={pos(metrics.cagr)}
+                      positive={pos(metrics.portfolioMarketValue > 0 ? metrics.cagrMtm : metrics.cagr)}
                     />
                   </View>
                   <View style={stylesMetrics.cardGridItem}>
@@ -324,11 +325,11 @@ const Metrics: React.FC = () => {
                   <View style={stylesMetrics.cardGridItem}>
                     <MetricCard
                       label="XIRR"
-                      value={fmtPct(metrics.xirr)}
+                      value={fmtPct(metrics.xirrMtm)}
                       subtitle="per year, time-weighted cash flows"
                       description="Internal Rate of Return accounting for the exact dates of every buy, sell, and dividend. More accurate than CAGR when flows are irregular."
                       iconName={ICON.calculator}
-                      positive={pos(metrics.xirr)}
+                      positive={pos(metrics.xirrMtm)}
                       tag="IRR"
                     />
                   </View>
