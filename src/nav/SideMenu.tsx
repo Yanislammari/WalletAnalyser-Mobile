@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, Modal, StyleSheet, Dimensions } from "rea
 import Icon from "react-native-vector-icons/Ionicons";
 import { useAuth } from "../providers/AuthProvider";
 import { useNavigation } from "@react-navigation/native";
+import { C } from "../utils/color";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const DRAWER_WIDTH = SCREEN_WIDTH * 0.70;
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   banner: {
-    backgroundColor: "#7c3aed",
+    backgroundColor: C.indigo700,
     paddingHorizontal: 20,
     paddingVertical: 16,
     marginBottom: 16,
@@ -207,7 +208,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#7c3aed",
+    backgroundColor: C.indigo700,
     paddingVertical: 14,
     paddingHorizontal: 16,
     alignItems: "center",

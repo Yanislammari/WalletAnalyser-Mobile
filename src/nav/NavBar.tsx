@@ -14,6 +14,8 @@ import { RankingType } from "../enums/RankType";
 import AnalysisDetail from "../screens/AnalysisDetail";
 import { ModifyProfile } from "../screens/ModifyProfile";
 import Payments from "../screens/Payments";
+import { C } from "../utils/color";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const Stack = createNativeStackNavigator();
 
@@ -79,6 +81,8 @@ const TAB_ICONS: Partial<Record<keyof NavBarParamList, string>> = {
 
 export default function NavBar() {
   const { selectedPortfolio } = usePortfolio();
+  const insets = useSafeAreaInsets();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -90,8 +94,20 @@ export default function NavBar() {
             return <Icon name={TAB_ICONS[route.name] || "ellipse-outline"} size={size} color={color} />;
           }
         },
-        tabBarActiveTintColor: "#6200ee",
+        tabBarActiveTintColor: C.indigo700,
         tabBarInactiveTintColor: "gray",
+        tabBarActiveBackgroundColor : C.purple100,
+        tabBarStyle: {
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
+          paddingTop: 4,
+          paddingHorizontal : 6,
+          backgroundColor: C.white,
+        },
+        tabBarItemStyle: {
+          borderRadius: 16,
+          overflow: "hidden",
+        },
       })}
     >
       <Tab.Screen name="Dashboard" component={Dashboard} options={{headerShown: true, header: () => <Header />}}/>

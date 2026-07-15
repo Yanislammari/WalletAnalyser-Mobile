@@ -18,7 +18,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import ViewSelector, { ViewType } from "../components/modal/SelectView";
 import { AnalysisStackParamList } from "../nav/NavBar";
 import { toast } from "sonner-native";
-import { ScrollView } from "react-native-gesture-handler";
+import { FlatList, ScrollView } from "react-native-gesture-handler";
 
 type NavigationProp = NativeStackNavigationProp<AnalysisStackParamList>;
 
@@ -80,6 +80,7 @@ const Analysis: React.FC = () => {
   );
 
   const handleEndReached = useCallback(() => {
+    if(!hasMoreDown || isLoadingMoreDown)return
     fetchMoreStocks(search, false);
   }, [fetchMoreStocks, search]);
 
@@ -247,7 +248,7 @@ const Analysis: React.FC = () => {
     return (
       <View style={[styles.flashlistContainer, styles.flex1]}>
         {renderHeader()}
-        {userStocks == null || userStocks.sectorsData.length === 0 ? (
+        {userStocks == null || userStocks.sectorsData == null || userStocks.sectorsData.length === 0 ? (
           <Text style={styles.emptyText}>No stocks found</Text>
         ) : (
           <FlashList
@@ -266,48 +267,63 @@ const Analysis: React.FC = () => {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-    >
+    <View style={styles.container}>
       {renderHeader()}
 
       {view === "cluster" && (
-        <View style={styles.grid}>
-          {filteredClusters.length === 0 ? (
-            <Text style={[styles.emptyText, styles.emptyTextFullWidth]}>No clusters found</Text>
-          ) : (
-            filteredClusters.map((c) => <CardSectorPerf key={c.name} {...c} />)
+        <FlatList
+          data={filteredClusters}
+          keyExtractor={(c) => c.name ?? ""}
+          renderItem={({ item }) => (
+            <View style={styles.gridItemWrapper}>
+              <CardSectorPerf {...item} />
+            </View>
           )}
-        </View>
+          initialNumToRender={8} 
+          windowSize={7}
+          removeClippedSubviews={true}
+          ListEmptyComponent={<Text style={[styles.emptyText, styles.emptyTextFullWidth]}>No clusters found</Text>}
+        />
       )}
 
       {view === "sector" && (
-        <View style={styles.grid}>
-          {filteredSectors.length === 0 ? (
-            <Text style={[styles.emptyText, styles.emptyTextFullWidth]}>No sectors found</Text>
-          ) : (
-            filteredSectors.map((s) => <CardSectorPerf key={s.name} {...s} />)
+        <FlatList
+          data={filteredSectors}
+          keyExtractor={(s) => s.name ?? ""}
+          renderItem={({ item }) => (
+            <View style={styles.gridItemWrapper}>
+              <CardSectorPerf {...item} />
+            </View>
           )}
-        </View>
+          initialNumToRender={8}
+          windowSize={7}
+          removeClippedSubviews={true}
+          ListEmptyComponent={<Text style={[styles.emptyText, styles.emptyTextFullWidth]}>No sectors found</Text>}
+        />
       )}
 
       {view === "countries" && (
-        <View style={styles.grid}>
-          {filteredCountries.length === 0 ? (
-            <Text style={[styles.emptyText, styles.emptyTextFullWidth]}>No countries found</Text>
-          ) : (
-            filteredCountries.map((c) => <CardSectorPerf key={c.name} {...c} />)
+        <FlatList
+          data={filteredCountries}
+          keyExtractor={(c) => c.name ?? ""}
+          renderItem={({ item }) => (
+            <View style={styles.gridItemWrapper}>
+              <CardSectorPerf {...item} />
+            </View>
           )}
-        </View>
+          initialNumToRender={8} 
+          windowSize={7}
+          removeClippedSubviews={true}
+          ListEmptyComponent={<Text style={[styles.emptyText, styles.emptyTextFullWidth]}>No countries found</Text>}
+        />
       )}
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 40 },
-  flashlistContainer: { padding: 16, paddingBottom: 0},
+  container: { padding: 16, marginBottom : 175 },
+  flashlistContainer: { padding: 16, paddingBottom: 15},
   flex1: { flex: 1 },
   headerRow: { flexDirection: "column", gap: 12, marginBottom: 16 },
   headerTitle: { fontSize: 20, fontWeight: "700", color: "#111827" },
@@ -323,6 +339,10 @@ const styles = StyleSheet.create({
   grid: { flexDirection: "column", gap: 12 },
   emptyText: { fontSize: 13, color: "#A1A1AA", textAlign: "center", paddingVertical: 24 },
   emptyTextFullWidth: { width: "100%" },
+  gridItemWrapper: {
+    flex: 1,
+    paddingBottom : 6,
+  },
 });
 
 export default Analysis;

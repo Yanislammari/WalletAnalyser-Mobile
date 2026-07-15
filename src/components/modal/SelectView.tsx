@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { C } from "../../utils/color";
 
 export type ViewType = "cluster" | "sector" | "my_stocks" | "countries";
 
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
     marginTop: -24,
     marginBottom: 24,
     paddingVertical: 12,
-    backgroundColor: "#7C3AED",
+    backgroundColor: C.indigo700,
     borderRadius: 8,
     gap: 15,
   },
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
     top: "100%",
     left: 0,
     right: 0,
-    marginTop: 4,
+    marginTop: 0,
     backgroundColor: "#fff",
     borderRadius: 8,
     paddingVertical: 4,
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   optionActive: {
-    backgroundColor: "#F5F3FF",
+    backgroundColor: C.purple100,
   },
   optionText: {
     fontSize: 15,
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
   },
   optionTextActive: {
     fontWeight: "700",
-    color: "#7C3AED",
+    color: C.indigo700,
   },
 });
 

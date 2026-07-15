@@ -6,6 +6,7 @@ export const C = {
   purple100: "#f3e8ff",
   purple50: "#faf5ff",
   indigo700: "#4338ca",
+  indigo100: "#938af5",
   emerald300: "#6ee7b7",
   emerald50: "#ecfdf5",
   emerald500: "#10b981",
