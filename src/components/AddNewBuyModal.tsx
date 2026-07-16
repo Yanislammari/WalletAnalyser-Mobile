@@ -7,9 +7,8 @@ import {
   Modal,
   Pressable,
   ActivityIndicator,
-  ScrollView,
   StyleSheet,
-  Keyboard,
+  Keyboard
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import type { Currency } from "../models/Currency";
@@ -26,8 +25,8 @@ import { InputMode } from "../enums/InputMode";
 import type { AssetPriceResponse } from "../responses/AssetPriceResponse";
 import { useAuth } from "../providers/AuthProvider";
 import { toast } from "sonner-native";
-import AddAssetSearchSelect from "./transactions/AddSearchSelect";
 import CurrencyPicker from "./picker/CurrencyPicker";
+import AssetSearchSelect from "./transactions/AssetSearchSelect";
 
 interface AddNewBuyModalProps {
   visible: boolean;
@@ -52,14 +51,21 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
   const portfolioService = PortfolioService.getInstance();
   const assetService = AssetService.getInstance();
   const currencyService = CurrencyService.getInstance();
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const { isPro } = useAuth();
   const freeMinDate = !isPro
     ? new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
     : undefined;
 
   useEffect(() => {
-    assetService.getAssets().then(setAssets).catch(() => setAssets([]));
-  }, []);
+    if (!props.editTransaction?.assetId) {
+      setSelectedAsset(null);
+      return;
+    }
+    assetService.getAssetById(props.editTransaction.assetId)
+      .then(setSelectedAsset)
+      .catch(() => {});
+  }, [props.editTransaction?.assetId]);
 
   // Pre-fill form in edit mode
   useEffect(() => {
@@ -207,17 +213,15 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
         transparent
         animationType="slide"
         onRequestClose={() => {
-            if (Keyboard.isVisible()) {
-              Keyboard.dismiss();
-            } else {
-              props.onClose();
-            }
-          }}
-        >
+          if (Keyboard.isVisible()) {
+            Keyboard.dismiss();
+          } else {
+            props.onClose();
+          }
+        }}
+      >
         <Pressable style={styles.backdrop} onPress={props.onClose}>
           <Pressable style={styles.box} onPress={() => {}}>
-            <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-
               {/* Header */}
               <View style={styles.header}>
                 <View style={styles.headerLeft}>
@@ -252,10 +256,15 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
                 {!isEditMode && (
                   <View>
                     <Text style={styles.label}>Asset</Text>
-                    <AddAssetSearchSelect
-                      assets={assets}
-                      value={form.assetId}
-                      onChange={(assetId) => setForm((f) => ({ ...f, assetId }))}
+                    <AssetSearchSelect
+                      selectedAsset={selectedAsset}
+                      onSelect={(asset) => {
+                        setSelectedAsset(asset);
+                        setForm((f) => ({ ...f, assetId: asset?.id ?? "" }));
+                      }}
+                      fetchAssets={(search, offset, limit) =>
+                        assetService.getAssetsPaginated(search, offset, limit)
+                      }
                       onAddCustomAsset={() => setCustomAssetVisible(true)}
                     />
                   </View>
@@ -398,7 +407,6 @@ const AddNewBuyModal: React.FC<AddNewBuyModalProps> = (props) => {
                 </View>
 
               </View>
-            </ScrollView>
           </Pressable>
         </Pressable>
       </Modal>

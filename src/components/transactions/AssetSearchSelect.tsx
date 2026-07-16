@@ -1,342 +1,264 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
-  Text,
   TextInput,
-  TouchableOpacity,
-  Modal,
-  TouchableWithoutFeedback,
   FlatList,
-  StyleSheet
+  Pressable,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  Keyboard,
 } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons"
-import type { Asset } from "../../models/Asset";
-import { DROPDOWN_MAX_HEIGHT } from "../../constants/styles";
+import Icon from "react-native-vector-icons/Ionicons";
+import { Asset } from "../../models/Asset";
+
+const PAGE_SIZE = 10;
 
 interface AssetSearchSelectProps {
-  assets: Asset[];
-  value: string;
-  onChange: (assetId: string) => void;
+  selectedAsset: Asset | null;
+  onSelect: (asset: Asset | null) => void;
+  fetchAssets: (search: string, offset: number, limit: number) => Promise<{ assets: Asset[]; hasMore: boolean }>;
   placeholder?: string;
   onAddCustomAsset?: () => void;
 }
 
-const AssetSearchSelect: React.FC<
-  AssetSearchSelectProps
-> = ({
-  assets,
-  value,
-  onChange,
+function AssetSearchSelect({
+  selectedAsset,
+  onSelect,
+  fetchAssets,
   placeholder = "Search for an asset...",
   onAddCustomAsset,
-}) => {
-  const containerRef = useRef<View>(null);
+}: AssetSearchSelectProps) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [items, setItems] = useState<Asset[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [offset, setOffset] = useState(0);
 
-  const [query, setQuery] =
-    useState("");
+  const inputRef = useRef<TextInput>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeQueryRef = useRef<string>("");
+  const loadingMoreRef = useRef(false);
 
-  const [open, setOpen] =
-    useState(false);
+  const displayName = (asset: Asset): string => {
+    if (asset.officialName && asset.tickerName) return `${asset.officialName} (${asset.tickerName})`;
+    return asset.officialName ?? asset.tickerName ?? "";
+  };
 
-  const [position, setPosition] =
-    useState({
-      top: 0,
-      left: 0,
-      width: 0,
-    });
+  const loadFirst = useCallback(async (search: string) => {
+    activeQueryRef.current = search;
+    setLoading(true);
+    setItems([]);
+    setOffset(0);
+    setHasMore(false);
+    try {
+      const result = await fetchAssets(search, 0, PAGE_SIZE);
+      if (activeQueryRef.current !== search) return;
+      setItems(result.assets);
+      setHasMore(result.hasMore);
+      setOffset(PAGE_SIZE);
+    } catch { /* ignore */ }
+    finally { if (activeQueryRef.current === search) setLoading(false); }
+  }, [fetchAssets]);
 
-  const selectedAsset =
-    assets.find(
-      (a) => a.id === value
-    ) ?? null;
+  const loadMore = useCallback(async (currentOffset: number, search: string) => {
+    if (loadingMoreRef.current || !hasMore) return;
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+    try {
+      const result = await fetchAssets(search, currentOffset, PAGE_SIZE);
+      if (activeQueryRef.current !== search) return;
+      setItems((prev) => [...prev, ...result.assets]);
+      setHasMore(result.hasMore);
+      setOffset(currentOffset + PAGE_SIZE);
+    } catch { /* ignore */ }
+    finally { loadingMoreRef.current = false; setLoadingMore(false); }
+  }, [fetchAssets, hasMore]);
 
-  const displayName = (
-    asset: Asset
-  ) => {
-    if (
-      asset.officialName &&
-      asset.tickerName
-    ) {
-      return `${asset.officialName} (${asset.tickerName})`;
+  // Focus control
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    } else {
+      inputRef.current?.blur();
+      Keyboard.dismiss();
     }
+  }, [open]);
 
-    return (
-      asset.officialName ??
-      asset.tickerName ??
-      ""
-    );
+  const handleOpen = () => {
+    setQuery("");
+    activeQueryRef.current = "";
+    setOpen(true);
+    loadFirst("");
   };
 
-  const filtered =
-    useMemo(() => {
-      const q =
-        query.toLowerCase();
-
-      return assets.filter(
-        (asset) =>
-          asset.officialName
-            ?.toLowerCase()
-            .includes(q) ||
-          asset.tickerName
-            ?.toLowerCase()
-            .includes(q)
-      );
-    }, [query, assets]);
-
-  const openDropdown =
-    () => {
-      containerRef.current?.measureInWindow(
-        (
-          x,
-          y,
-          width,
-          height
-        ) => {
-          setPosition({
-            left: x,
-            top:
-              y +
-              height +
-              4,
-            width,
-          });
-
-          setOpen(true);
-        }
-      );
-    };
-
-  const closeDropdown =
-    () => {
-      setOpen(false);
-      setQuery("");
-    };
-
-  const handleSelect = (
-    asset: Asset
-  ) => {
-    onChange(asset.id);
-    closeDropdown();
+  const handleClose = () => {
+    setQuery("");
+    setOpen(false);
   };
+
+  const handleToggle = () => {
+    if (open) {
+      handleClose();
+    } else {
+      handleOpen();
+    }
+  };
+
+  const handleInputChange = (val: string) => {
+    setQuery(val);
+    if (val === "") onSelect(null);
+    if (!open) setOpen(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => loadFirst(val), 300);
+  };
+
+  const handleSelect = (asset: Asset) => {
+    onSelect(asset);
+    handleClose();
+  };
+
+  const handleAddCustomAsset = () => {
+    handleClose();
+    onAddCustomAsset?.();
+  };
+
+  const renderItem = ({ item }: { item: Asset }) => (
+    <Pressable
+      onPress={() => handleSelect(item)}
+      style={({ pressed }) => [styles.row, pressed && { backgroundColor: "#faf5ff" }]}
+    >
+      <Text style={styles.rowText} numberOfLines={1}>{item.officialName ?? item.tickerName}</Text>
+      {item.tickerName && item.officialName && <Text style={styles.rowTicker}>{item.tickerName}</Text>}
+    </Pressable>
+  );
 
   return (
-    <View ref={containerRef}>
-      <TouchableOpacity
-        style={[styles.input, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
-        onPress={openDropdown}
-        activeOpacity={0.7}
-      >
-        <Text style={{ fontSize: 13, color: selectedAsset ? '#111827' : '#9ca3af' }}>
-          {selectedAsset ? displayName(selectedAsset) : placeholder}
-        </Text>
-        <Ionicons name="chevron-down-outline" size={13} color="#9ca3af" />
-      </TouchableOpacity>
+    <View style={styles.container}>
+      {open && (
+        <View 
+          style={styles.backdrop} 
+          onStartShouldSetResponder={() => {
+            handleClose();
+            return true;
+          }}
+        />
+      )}
 
-      <Modal
-        visible={
-          open
-        }
-        transparent
-        animationType="fade"
-      >
-        <TouchableWithoutFeedback
-          onPress={
-            closeDropdown
-          }
-        >
-          <View
-            style={
-              styles.overlay
-            }
-          >
-            <TouchableWithoutFeedback>
-              <View
-                style={[
-                  styles.dropdown,
-                  {
-                    top:
-                      position.top,
-                    left:
-                      position.left,
-                    width:
-                      position.width,
-                  },
-                ]}
-              >
-                {!!onAddCustomAsset && (
-                  <TouchableOpacity
-                    style={
-                      styles.addButton
-                    }
-                    onPress={() => {
-                      closeDropdown();
-                      onAddCustomAsset();
-                    }}
-                  >
-                    <Ionicons
-                      name="add-circle-outline"
-                      size={
-                        18
-                      }
-                      color="#9333EA"
-                    />
+      <Pressable onPress={handleToggle} style={styles.inputWrapper}>
+        <View style={styles.inputContainer} pointerEvents={open ? "auto" : "none"}>
+          <TextInput
+            ref={inputRef}
+            style={styles.input}
+            placeholder={selectedAsset ? displayName(selectedAsset) : placeholder}
+            placeholderTextColor={selectedAsset ? "#111827" : "#9ca3af"}
+            value={open ? query : ""}
+            onChangeText={handleInputChange}
+            editable={true}
+          />
+        </View>
+        <Icon name={open ? "chevron-up" : "chevron-down"} size={18} color="#9ca3af" />
+      </Pressable>
 
-                    <Text
-                      style={
-                        styles.addText
-                      }
-                    >
-                      Add custom
-                      asset
-                    </Text>
-                  </TouchableOpacity>
-                )}
+      {open && (
+        <View style={styles.dropdown}>
+          {onAddCustomAsset && (
+            <Pressable onPress={handleAddCustomAsset} style={styles.addCustomRow}>
+              <Icon name="add-circle-outline" size={16} color="#9333ea" />
+              <Text style={styles.addCustomText}>Add custom asset</Text>
+            </Pressable>
+          )}
 
-                {filtered.length ===
-                0 ? (
-                  <Text
-                    style={
-                      styles.empty
-                    }
-                  >
-                    No assets
-                    found
-                  </Text>
-                ) : (
-                  <FlatList
-                    data={
-                      filtered
-                    }
-                    keyboardShouldPersistTaps="handled"
-                    keyExtractor={(
-                      item
-                    ) =>
-                      item.id
-                    }
-                    renderItem={({
-                      item,
-                    }) => (
-                      <TouchableOpacity
-                        style={
-                          styles.item
-                        }
-                        onPress={() =>
-                          handleSelect(
-                            item
-                          )
-                        }
-                      >
-                        <Text
-                          numberOfLines={
-                            1
-                          }
-                          style={
-                            styles.name
-                          }
-                        >
-                          {item.officialName ??
-                            item.tickerName}
-                        </Text>
-
-                        {!!(
-                          item.tickerName &&
-                          item.officialName
-                        ) && (
-                          <Text
-                            style={
-                              styles.ticker
-                            }
-                          >
-                            {
-                              item.tickerName
-                            }
-                          </Text>
-                        )}
-                      </TouchableOpacity>
-                    )}
-                  />
-                )}
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+          {loading ? (
+            <View style={styles.loaderBox}><ActivityIndicator size="small" color="#a855f7" /></View>
+          ) : (
+            <FlatList
+              data={items}
+              keyExtractor={(item) => item.id}
+              renderItem={renderItem}
+              nestedScrollEnabled
+              style={styles.list}
+              onEndReachedThreshold={0.3}
+              onEndReached={() => loadMore(offset, activeQueryRef.current)}
+              keyboardShouldPersistTaps="always"
+              ListEmptyComponent={<Text style={styles.emptyText}>No assets found</Text>}
+              ListFooterComponent={
+                loadingMore ? <View style={styles.loaderBoxSmall}><ActivityIndicator size="small" color="#c084fc" /></View> : null
+              }
+            />
+          )}
+        </View>
+      )}
     </View>
   );
-};
+}
 
-const styles =
-  StyleSheet.create({
-    input: {
-      borderWidth: 1,
-      borderColor:
-        "#E5E7EB",
-      borderRadius: 12,
-      padding: 12,
-      backgroundColor:
-        "white",
-    },
-
-    overlay: {
-      flex: 1,
-    },
-
-    dropdown: {
-      position:
-        "absolute",
-      backgroundColor:
-        "white",
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor:
-        "#E5E7EB",
-      maxHeight:
-        DROPDOWN_MAX_HEIGHT,
-      elevation: 8,
-    },
-
-    addButton: {
-      flexDirection:
-        "row",
-      alignItems:
-        "center",
-      padding: 12,
-      gap: 8,
-      borderBottomWidth: 1,
-      borderBottomColor:
-        "#F3F4F6",
-    },
-
-    addText: {
-      color:
-        "#9333EA",
-      fontWeight:
-        "600",
-    },
-
-    item: {
-      flexDirection:
-        "row",
-      justifyContent:
-        "space-between",
-      padding: 12,
-    },
-
-    name: {
-      flex: 1,
-    },
-
-    ticker: {
-      color:
-        "#9CA3AF",
-      marginLeft: 8,
-    },
-
-    empty: {
-      padding: 12,
-      color:
-        "#9CA3AF",
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    zIndex: 1000,
+  },
+  backdrop: {
+    position: "absolute",
+    top: -1000,
+    bottom: -1000,
+    left: -1000,
+    right: -1000,
+    zIndex: 998,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    backgroundColor: "#fff",
+    zIndex: 999,
+  },
+  inputContainer: {
+    flex: 1,
+  },
+  input: { fontSize: 13, color: "#111827", padding: 0 },
+  dropdown: {
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    maxHeight: 220,
+    overflow: "hidden",
+    zIndex: 999,
+  },
+  list: { maxHeight: 220 },
+  addCustomRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6",
+  },
+  addCustomText: { color: "#9333ea", fontWeight: "600", fontSize: 13 },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  rowText: { fontSize: 13, color: "#1f2937", flexShrink: 1 },
+  rowTicker: { fontSize: 11, color: "#9ca3af" },
+  emptyText: { padding: 12, fontSize: 13, color: "#9ca3af" },
+  loaderBox: { paddingVertical: 16, alignItems: "center" },
+  loaderBoxSmall: { paddingVertical: 8, alignItems: "center" },
+});
 
 export default AssetSearchSelect;

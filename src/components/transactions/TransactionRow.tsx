@@ -63,27 +63,6 @@ const TransactionRow: React.FC<TransactionRowProps> = (props) => {
     return amount != null ? `${parseFloat(amount.toFixed(2))} ${cn(row.buyCurrencyId)}` : "—";
   };
 
-  const ActionButtons = ({ onEditClick }: { onEditClick: () => void }) => (
-    <View style={styles.actionButtons}>
-      <TouchableOpacity
-        onPress={onEditClick}
-        style={styles.actionBtn}
-        activeOpacity={0.7}
-        hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-      >
-        <Ionicons name="create-outline" size={16} color="#9ca3af" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={handleDeleteClick}
-        style={styles.actionBtn}
-        activeOpacity={0.7}
-        hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-      >
-        <Ionicons name="trash-outline" size={16} color="#9ca3af" />
-      </TouchableOpacity>
-    </View>
-  );
-
   if (props.variant === "buy") {
     const { row, onEdit } = props;
     return (
@@ -238,6 +217,7 @@ const styles = StyleSheet.create({
     width : 100,
     color: "#111827",
     flex: 1,
+    paddingLeft : 4
   },
   cellMuted: {
     fontSize: 13,

@@ -264,7 +264,7 @@ const PortfolioDetail: React.FC = () => {
   }
 
   return (
-    <ScrollView style={TransactionStyle.container} contentContainerStyle={TransactionStyle.content}>
+    <ScrollView style={TransactionStyle.container} contentContainerStyle={TransactionStyle.content} keyboardShouldPersistTaps="always">
       {/* Header row */}
       <View style={TransactionStyle.headerRow}>
         <View style={TransactionStyle.headerLeft}>

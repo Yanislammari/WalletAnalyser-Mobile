@@ -75,18 +75,6 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
     : key === TabType.SELLS ? props.sellTotal
     : props.dividendTotal;
 
-  const BUY_COLS = [
-    { label: 'Date',    key: 'date',    width: 90  },
-    { label: 'Company', key: 'company', width: 120 },
-    { label: 'Amount',  key: 'amount',  width: 110 },
-  ];
-
-  const SELL_COLS = [
-    { label: 'Date',    key: 'date',    width: 90  },
-    { label: 'Company', key: 'company', width: 120 },
-    { label: 'Gain',  key: 'gain',  width: 90 },
-  ];
-
   return (
     <View style={transactionTableStyle.card}>
 
@@ -156,20 +144,6 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
               ) : (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View>
-                    {/* Header */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      {BUY_COLS.map((col) => (
-                        <SortableHeader
-                          key={col.key}
-                          label={col.label}
-                          columnKey={col.key}
-                          sortState={buySortState}
-                          onSort={handleBuySort}
-                          style={{ width: col.width }}
-                        />
-                      ))}
-                      <View style={{ width: 16}} />
-                    </View>
                     {/* Rows */}
                     {sortedBuys.map((row) => (
                       <TransactionRow
@@ -208,19 +182,6 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
               ) : (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View>
-                    <View style={transactionTableStyle.tableHeaderRow}>
-                      {SELL_COLS.map((col) => (
-                        <SortableHeader
-                          key={col.key}
-                          label={col.label}
-                          columnKey={col.key}
-                          sortState={sellSortState}
-                          onSort={handleSellSort}
-                          style={{ width: col.width }}
-                        />
-                      ))}
-                      <View style={transactionTableStyle.actionCol} />
-                    </View>
                     {sortedSells.map((row) => (
                       <TransactionRow
                         key={row.id}
@@ -256,19 +217,6 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
               ) : (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View>
-                    <View style={transactionTableStyle.tableHeaderRow}>
-                      {BUY_COLS.map((col) => (
-                        <SortableHeader
-                          key={col.key}
-                          label={col.label}
-                          columnKey={col.key}
-                          sortState={dividendSortState}
-                          onSort={handleDividendSort}
-                          style={{ width: col.width }}
-                        />
-                      ))}
-                      <View style={{ width: 16}} />
-                    </View>
                     {sortedDividends.map((row) => (
                       <TransactionRow
                         key={row.id}

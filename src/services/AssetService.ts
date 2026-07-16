@@ -22,6 +22,29 @@ class AssetService extends BaseService {
     });
   }
 
+  public async getAssetsPaginated(
+    search?: string,
+    offset = 0,
+    limit  = 10,
+  ): Promise<{ assets: Asset[]; hasMore: boolean }> {
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    params.set("offset", String(offset));
+    params.set("limit",  String(limit));
+    return this.request<{ assets: Asset[]; hasMore: boolean }>(
+      `/asset/search?${params.toString()}`,
+      { method: "GET" },
+    );
+  }
+
+  public async getAssetById(assetId: string): Promise<Asset | null> {
+    try {
+      return await this.request<Asset>(`/asset/${assetId}`, { method: "GET" });
+    } catch {
+      return null;
+    }
+  }
+
   public async previewCustomAsset(ticker: string): Promise<{
     ticker: string;
     officialName: string | null;

@@ -7,7 +7,6 @@ import {
   Modal,
   Pressable,
   ActivityIndicator,
-  ScrollView,
   StyleSheet,
   Keyboard,
 } from "react-native";
@@ -50,14 +49,21 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
   const portfolioService = PortfolioService.getInstance();
   const assetService = AssetService.getInstance();
   const currencyService = CurrencyService.getInstance();
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const { isPro } = useAuth();
   const freeMinDate = !isPro
     ? new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
     : undefined;
 
   useEffect(() => {
-    assetService.getAssets().then(setAssets).catch(() => setAssets([]));
-  }, []);
+    if (!props.editTransaction?.assetId) {
+      setSelectedAsset(null);
+      return;
+    }
+    assetService.getAssetById(props.editTransaction.assetId)
+      .then(setSelectedAsset)
+      .catch(() => {});
+  }, [props.editTransaction?.assetId]);
 
   useEffect(() => {
     if (!props.visible || !form.assetId || !form.date) { 
@@ -242,8 +248,6 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
       >
       <Pressable style={styles.backdrop} onPress={props.onClose}>
         <Pressable style={styles.box} onPress={() => {}}>
-          <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.headerLeft}>
@@ -277,9 +281,14 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
                 <View>
                   <Text style={styles.label}>Asset</Text>
                   <AssetSearchSelect
-                    assets={ownedAssets}
-                    value={form.assetId}
-                    onChange={(assetId) => setForm((f) => ({ ...f, assetId }))}
+                    selectedAsset={selectedAsset}
+                    onSelect={(asset) => {
+                      setSelectedAsset(asset);
+                      setForm((f) => ({ ...f, assetId: asset?.id ?? "" }));
+                    }}
+                    fetchAssets={(search, offset, limit) =>
+                      assetService.getAssetsPaginated(search, offset, limit)
+                    }
                   />
                   {form.assetId && form.date && (
                     <View style={styles.sharesAvailableRow}>
@@ -432,7 +441,6 @@ const AddNewSellModal: React.FC<AddNewSellModalProps> = (props) => {
               </View>
 
             </View>
-          </ScrollView>
         </Pressable>
       </Pressable>
     </Modal>

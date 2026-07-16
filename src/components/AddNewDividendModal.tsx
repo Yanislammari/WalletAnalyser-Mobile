@@ -6,23 +6,19 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 
 import type { Currency } from "../models/Currency";
 import type { Asset } from "../models/Asset";
 import type { AssetDividendResponse } from "../responses/AssetDividendResponse";
 import PortfolioService from "../services/PortfolioService";
 import AssetService from "../services/AssetService";
-import AssetSearchSelect from "./transactions/AssetSearchSelect";
-import AddCustomAssetModal from "./AddCustomAssetModal";
 import DateInput from "./transactions/DateInput";
 import { emptyDividend, type DividendForm } from "../forms/DividendForm";
 import { useAuth } from "../providers/AuthProvider";
-import Ionicons from "react-native-vector-icons/Ionicons";
 import CurrencyPicker from "./picker/CurrencyPicker";
+import AssetSearchSelect from "./transactions/AssetSearchSelect";
 
 interface Props {
   visible: boolean;
@@ -45,13 +41,10 @@ const AddNewDividendModal: React.FC<Props> = ({
 
   const [form, setForm] = useState<DividendForm>(emptyDividend());
   const [saving, setSaving] = useState(false);
-  const [assets, setAssets] = useState<Asset[]>([]);
-
-  const customAssetRef = useRef<any>(null);
-  const [customAssetVisible, setCustomAssetVisible] = useState<boolean>(false);
 
   const portfolioService = PortfolioService.getInstance();
   const assetService = AssetService.getInstance();
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
   const { isPro } = useAuth();
   const isDisabled = !form.date ||
@@ -59,6 +52,10 @@ const AddNewDividendModal: React.FC<Props> = ({
                   !form.currencyId ||
                   isNaN(Number(form.amount)) || Number(form.amount) <= 0 ||
                   saving
+  
+  useEffect(() => {
+    if (!editTransaction) setForm(emptyDividend());
+  }, [editTransaction]);
 
   const freeMinDate = useMemo(() => {
     if (isPro) return undefined;
@@ -66,10 +63,6 @@ const AddNewDividendModal: React.FC<Props> = ({
       .toISOString()
       .split("T")[0];
   }, [isPro]);
-
-  useEffect(() => {
-    assetService.getAssets().then(setAssets).catch(() => setAssets([]));
-  }, []);
 
   useEffect(() => {
     if (!currencies.length) return;
@@ -166,14 +159,15 @@ const AddNewDividendModal: React.FC<Props> = ({
               <>
                 <Text style={styles.label}>Asset</Text>
                 <AssetSearchSelect
-                  assets={assets}
-                  value={form.assetId}
-                  onChange={(assetId) =>
-                    setForm((f) => ({ ...f, assetId }))
+                  selectedAsset={selectedAsset}
+                  onSelect={(asset) => {
+                    setSelectedAsset(asset);
+                    setForm((f) => ({ ...f, assetId: asset?.id ?? "" }));
+                  }}
+                  fetchAssets={(search, offset, limit) =>
+                    assetService.getAssetsPaginated(search, offset, limit)
                   }
-                  onAddCustomAsset={() =>
-                    customAssetRef.current?.open()
-                  }
+                  placeholder="Search for an asset... (optional)"
                 />
               </>
             )}
@@ -226,16 +220,6 @@ const AddNewDividendModal: React.FC<Props> = ({
           </View>
         </View>
       </Modal>
-
-      <AddCustomAssetModal
-        visible={customAssetVisible}
-        onClose={() => setCustomAssetVisible(false)}
-        onAssetCreated={(newAsset) => {
-          setAssets((prev) => [...prev, newAsset]);
-          setForm((f) => ({ ...f, assetId: newAsset.id }));
-          setCustomAssetVisible(false);
-        }}
-      />
     </>
   );
 };
