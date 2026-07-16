@@ -1,6 +1,7 @@
 import type React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import type { TopHolding } from "../../responses/MetricResponse";
+import { C } from "../../utils/color";
 
 const COLORS = [
   "#a855f7", // purple-500
@@ -10,15 +11,6 @@ const COLORS = [
   "#e9d5ff", // purple-200
   "#93c5fd", // blue-300
 ];
-
-const C = {
-  gray50: "#f9fafb",
-  gray200: "#e5e7eb",
-  gray300: "#d1d5db",
-  gray400: "#9ca3af",
-  gray500: "#6b7280",
-  gray700: "#374151",
-};
 
 interface SectorBreakdownProps {
   holdings: TopHolding[];

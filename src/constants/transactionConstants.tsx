@@ -7,17 +7,20 @@ export const TABS: TabItem[] = [
   { 
     key: TabType.BUYS,
     label: "Buys",
-    icon: <Ionicons name="trending-up-outline" size={15} />
+    icon: <Ionicons name="trending-up-outline" size={15} />,
+    iconColor: "#ccfcdb"
   },
   {
     key: TabType.SELLS,
     label: "Sells",
-    icon: <Ionicons name="trending-down-outline" size={15} />
+    icon: <Ionicons name="trending-down-outline" size={15} />,
+    iconColor: "#ffc3c3"
   },
   {
     key: TabType.DIVIDENDS,
     label: "Dividends",
-    icon: <Ionicons name="cash-outline" size={15} />
+    icon: <Ionicons name="cash-outline" size={15} />,
+    iconColor: "#c3ccff"
   },
 ];
 

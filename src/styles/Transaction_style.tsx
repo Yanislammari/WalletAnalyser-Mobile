@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { C } from "../utils/color";
 
 export const TransactionStyle = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
@@ -60,9 +61,11 @@ export const TransactionStyle = StyleSheet.create({
   },
   summaryCell: {
     width: '47%', borderRadius: 12, padding: 12, minHeight: 56,
+    borderColor : C.gray200,
+    borderWidth : 0.25
   },
-  summaryCellLabel: { fontSize: 11, color: '#6B7280', marginBottom: 4 },
+  summaryCellLabel: { fontSize: 11, color: C.gray700, marginBottom: 4 },
   summaryCellValue: { fontSize: 17, fontWeight: '700' },
-  summaryCellCurrency: { fontSize: 11, fontWeight: '500', color: '#9CA3AF' },
-  summaryCellNote: { fontSize: 10, color: '#9CA3AF', marginTop: 2 },
+  summaryCellCurrency: { fontSize: 11, fontWeight: '500', color: C.gray700 },
+  summaryCellNote: { fontSize: 10, color: C.gray500, marginTop: 2 },
 });

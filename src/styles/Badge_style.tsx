@@ -58,7 +58,7 @@ export const BadgeStyle = StyleSheet.create({
     transform: [{ rotate: "45deg" }],
   },
 
-  unlockedCount: { textAlign: "center", fontSize: 11, color: "#A1A1AA", marginTop: 24 },
+  unlockedCount: { textAlign: "center", fontSize: 11, color: "black", marginTop: 24 },
 
   overlay: {
     flex: 1,

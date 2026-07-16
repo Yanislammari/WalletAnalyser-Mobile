@@ -23,26 +23,44 @@ function ViewSelector({
 
   return (
     <View style={styles.wrapper}>
-      <Pressable style={styles.trigger} onPress={() => setIsOpen(!isOpen)}>
+      <Pressable
+        style={({ pressed }) => [
+          styles.trigger,
+          pressed && styles.triggerPressed, // iOS/fallback feedback
+        ]}
+        android_ripple={{ color: "rgba(255,255,255,0.2)" }}
+        onPress={() => setIsOpen(!isOpen)}
+      >
         <Text style={styles.triggerText}>{currentLabel}</Text>
-        <Text style={styles.chevron}>▾</Text>
+        <Text
+          style={[
+            styles.chevron,
+            isOpen && styles.chevronOpen,
+          ]}
+        >
+          ▾
+        </Text>
       </Pressable>
 
       {isOpen && (
         <>
           {/* invisible full-screen pressable to close on outside tap */}
           <Pressable style={styles.outsideCatcher} onPress={() => setIsOpen(false)} />
-
           <View style={styles.dropdown}>
             {tabs.map((tab) => (
-              <Pressable
-                key={tab.key}
-                style={[styles.option, view === tab.key && styles.optionActive]}
-                onPress={() => {
-                  setView(tab.key);
-                  setIsOpen(false);
-                }}
-              >
+                <Pressable
+                  key={tab.key}
+                  style={({ pressed }) => [
+                    styles.option,
+                    view === tab.key && styles.optionActive,
+                    pressed && styles.optionPressed,
+                  ]}
+                  android_ripple={{ color: C.purple100 }}
+                  onPress={() => {
+                    setView(tab.key);
+                    setIsOpen(false);
+                  }}
+                >
                 <Text
                   style={[
                     styles.optionText,
@@ -88,6 +106,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#fff",
   },
+  chevronOpen: {
+    transform: [{ rotate: "180deg" }],
+  },
   outsideCatcher: {
     position: "absolute",
     top: -1000,
@@ -127,6 +148,12 @@ const styles = StyleSheet.create({
   optionTextActive: {
     fontWeight: "700",
     color: C.indigo700,
+  },
+  triggerPressed: {
+    opacity: 0.85,
+  },
+  optionPressed: {
+    backgroundColor: "#f3f4f6",
   },
 });
 

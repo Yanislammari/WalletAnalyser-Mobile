@@ -8,6 +8,7 @@ import type { RankedAsset } from "../../responses/AssetAnalysisResponse";
 import { clusterName } from "../../utils/ClusterNaming";
 import { RankingType } from "../../enums/RankType";
 import { AnalysisStackParamList } from "../../nav/NavBar";
+import { C } from "../../utils/color";
 
 type NavigationProp = NativeStackNavigationProp<AnalysisStackParamList, "AnalysisDetail">;
 
@@ -142,17 +143,20 @@ const StocksDetailComponent: React.FC<RankedProps> = (rankAssetProps) => {
 
       <View style={styles.tagsRow}>
         {tags.map((tag, i) => (
-          <Pressable
-            key={i}
-            onPress={() => handleTagClick(tag.type as RankingType, tag.pos ?? 0, tag.id)}
-            hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
-            style={({ pressed }) => [styles.tag, pressed && styles.tagPressed]}
-          >
-            <Text style={styles.tagLabel} numberOfLines={1}>
-              {tag.label}
-            </Text>
-            <Text style={styles.tagRank}>#{tag.rank}</Text>
-          </Pressable>
+          <View style={styles.tagClip}>
+            <Pressable
+              key={i}
+              onPress={() => handleTagClick(tag.type as RankingType, tag.pos ?? 0, tag.id)}
+              hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+              style={({ pressed }) => [styles.tag, pressed && styles.tagPressed]}
+              android_ripple={{ color: C.gray500 }}
+            >
+              <Text style={styles.tagLabel} numberOfLines={1}>
+                {tag.label}
+              </Text>
+              <Text style={styles.tagRank}>#{tag.rank}</Text>
+            </Pressable>
+          </View>
         ))}
       </View>
     </View>
@@ -163,7 +167,7 @@ const StocksDetailComponent: React.FC<RankedProps> = (rankAssetProps) => {
   if (!highlightAnim) {
     return content;
   }
-
+  
   const translateX = highlightAnim.interpolate({ inputRange: [0, 1], outputRange: [6, 0] });
   const translateY = highlightAnim.interpolate({ inputRange: [0, 1], outputRange: [-4, 0] });
   const shadowOpacity = highlightAnim.interpolate({ inputRange: [0, 1], outputRange: [0.25, 0] });
@@ -232,6 +236,11 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
   },
+  tagClip: {
+    borderRadius: 8,
+    overflow: "hidden",
+    maxWidth: "75%",
+  },
   tag: {
     flexDirection: "row",
     alignItems: "center",
@@ -240,7 +249,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8, // plus de hauteur (était 4)
     borderRadius: 8,
     backgroundColor: "#F3F4F6",
-    maxWidth: "75%",
+    overflow: "hidden"
   },
   tagPressed: {
     backgroundColor: "#E5E7EB",

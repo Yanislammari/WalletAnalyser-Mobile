@@ -63,8 +63,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#111827",
     borderRadius: 12,
     paddingVertical: 8,
-    marginHorizontal: -16,   // bleeds past panelCard's 16px padding to the edges
-    paddingHorizontal: 16,   // ...then re-adds it internally so items stay aligned
+    marginHorizontal: -4,
+    paddingHorizontal: 16,
   },
   bottomItem: { flex: 1, alignItems: "center" },
   bottomItemDivider: {

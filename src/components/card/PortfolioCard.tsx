@@ -6,6 +6,7 @@ import type { Portfolio } from "../../models/Portfolio";
 import PortfolioService from "../../services/PortfolioService";
 import { toast } from "sonner-native";
 import { usePortfolio } from "../../providers/PortfolioProvider";
+import { C } from "../../utils/color";
 
 interface Props {
   portfolio: Portfolio;
@@ -148,6 +149,8 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     shadowColor: "#000",
+    borderColor: C.gray300,
+    borderWidth: 0.25,
     shadowOpacity: 0.06,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
@@ -166,8 +169,8 @@ const styles = StyleSheet.create({
   footerLeft: { flexDirection: "row", alignItems: "center", gap: 6 },
   assetCount: { fontSize: 11, color: "#9ca3af", fontWeight: "500" },
   currencyBadge: { backgroundColor: "#f5f3ff", borderWidth: 1, borderColor: "#e9d5ff", borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
-  currencyText: { fontSize: 10, color: "#7c3aed", fontWeight: "600" },
-  open: { fontSize: 11, color: "#7c3aed", fontWeight: "500" },
+  currencyText: { fontSize: 10, color: C.indigo700, fontWeight: "600" },
+  open: { fontSize: 11, color: C.indigo700, fontWeight: "500" },
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", alignItems: "center" },
   modal: { backgroundColor: "#fff", borderRadius: 20, padding: 24, width: "85%", gap: 12 },
   modalTitle: { fontSize: 16, fontWeight: "700", color: "#111827" },

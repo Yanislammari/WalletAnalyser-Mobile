@@ -6,14 +6,13 @@ import CompanyFilter from './CompanyFilter';
 import DateRangeFilter from './DateRangeFilter';
 import Pagination from './Pagination';
 import TransactionRow from './TransactionRow';
-import SortableHeader from './SortableHeader';
 import EmptyTable from './EmptyTable';
 import type { AssetBuyResponse } from '../../responses/AssetBuyResponse';
 import type { AssetSellResponse } from '../../responses/AssetSellResponse';
 import type { AssetDividendResponse } from '../../responses/AssetDividendResponse';
 import type { SortState } from '../../models/items/SortState';
 import { TABS } from '../../constants/transactionConstants';
-import { toggleSort, sortBuys, sortSells, sortDividends } from '../../utils/transactionSort';
+import { sortBuys, sortSells, sortDividends } from '../../utils/transactionSort';
 import { TabType } from '../../enums/TabType';
 import { transactionTableStyle } from '../../styles/transaction/transactionTableStyle';
 
@@ -56,13 +55,9 @@ interface TransactionTableProps {
 }
 
 const TransactionTable: React.FC<TransactionTableProps> = (props) => {
-  const [buySortState, setBuySortState] = useState<SortState | null>(null);
-  const [sellSortState, setSellSortState] = useState<SortState | null>(null);
-  const [dividendSortState, setDividendSortState] = useState<SortState | null>(null);
-
-  const handleBuySort = (key: string) => setBuySortState((prev) => toggleSort(prev, key));
-  const handleSellSort = (key: string) => setSellSortState((prev) => toggleSort(prev, key));
-  const handleDividendSort = (key: string) => setDividendSortState((prev) => toggleSort(prev, key));
+  const [buySortState] = useState<SortState | null>(null);
+  const [sellSortState] = useState<SortState | null>(null);
+  const [dividendSortState] = useState<SortState | null>(null);
 
   const sortedBuys = sortBuys(props.buys, buySortState);
   const sortedSells = sortSells(props.sells, sellSortState);
@@ -94,8 +89,8 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
                   {tab.label}
                 </Text>
                 {total > 0 && (
-                  <View style={[transactionTableStyle.badge, active && transactionTableStyle.badgeActive]}>
-                    <Text style={[transactionTableStyle.badgeText, active && transactionTableStyle.badgeTextActive]}>
+                  <View style={[transactionTableStyle.badge, { backgroundColor: tab.iconColor }]}>
+                    <Text style={transactionTableStyle.badgeText}>
                       {total}
                     </Text>
                   </View>
@@ -104,6 +99,7 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
             );
           })}
         </ScrollView>
+        <View style={transactionTableStyle.divider} />
 
         {/* Filters row */}
         <View style={transactionTableStyle.filters}>
@@ -156,6 +152,7 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
                       />
                     ))}
                     <AddRowButton onPress={props.onAdd} />
+                    <View style={transactionTableStyle.divider} />
                     <Pagination
                       page={props.buyPage}
                       total={props.buyTotal}
@@ -193,6 +190,7 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
                       />
                     ))}
                     <AddRowButton onPress={props.onAdd} />
+                    <View style={transactionTableStyle.divider} />
                     <Pagination
                       page={props.sellPage}
                       total={props.sellTotal}
@@ -228,6 +226,7 @@ const TransactionTable: React.FC<TransactionTableProps> = (props) => {
                       />
                     ))}
                     <AddRowButton onPress={props.onAdd} />
+                    <View style={transactionTableStyle.divider} />
                     <Pagination
                       page={props.dividendPage}
                       total={props.dividendTotal}

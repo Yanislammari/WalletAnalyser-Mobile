@@ -17,7 +17,7 @@ interface DmStatProps {
 const DmStatCard: React.FC<DmStatProps> = ({ stat } : DmStatProps) => {
   const deltaColor = stat.neutral ? C.gray400 : stat.up ? C.emerald600 : C.rose500;
   return (
-    <View style={styles.card}>
+    <View>
       <Text style={styles.label}>{stat.label}</Text>
       <Text style={styles.value}>{stat.value}</Text>
       <Text style={[styles.delta, { color: deltaColor }]}>{stat.delta}</Text>
@@ -26,11 +26,6 @@ const DmStatCard: React.FC<DmStatProps> = ({ stat } : DmStatProps) => {
 };
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: C.gray50,
-    borderRadius: 12,
-    padding: 14,
-  },
   label: {
     color: C.gray400,
     fontSize: 10,

@@ -224,11 +224,11 @@ const DashboardPage: React.FC = () => {
               <Skeleton style={dashboardStyles.chartSkeleton} />
             </View>
           ) : dashboardData && (
-              <View style={{ gap: 16 }}>
+              <View>
                 <View style={dashboardStyles.panelCard}>
                   <DmLineChart data={dashboardData.monthlyData} currency={cy} />
                 </View>
-                <View style={dashboardStyles.panelCard}>
+                <View style={dashboardStyles.breakdownCard}>
                   <SectorBreakdown holdings={dashboardData.topHoldings} />
                 </View>
               </View>
@@ -270,7 +270,7 @@ const DashboardPage: React.FC = () => {
             ) : (
               metrics &&
               metrics.totalInvested > 0 && (
-              <View style={dashboardStyles.panelCard}>
+              <View style={dashboardStyles.metricCard}>
                 <View style={dashboardStyles.titleRow}>
                   <Text style={dashboardStyles.panelTitle}>Performance metrics</Text>
                   <Text style={dashboardStyles.panelPeriod}>

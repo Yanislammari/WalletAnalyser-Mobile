@@ -278,7 +278,7 @@ const Metrics: React.FC = () => {
           {hasSells ? (
             <>
               <View>
-                <SectionHeader title="Returns" subtitle="How much value you created from your investments" />
+                <SectionHeader title="Returns" subtitle="How much value you created from your investments"/>
                 <View style={stylesMetrics.cardGrid}>
                   <View style={stylesMetrics.cardGridItem}>
                   <MetricCard

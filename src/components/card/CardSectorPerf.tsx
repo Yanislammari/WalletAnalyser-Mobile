@@ -132,15 +132,19 @@ const CardSectorPerf = (sector: SectorCardDataProps) => {
             <Text style={styles.sectionLabel}>Worst performers</Text>
             <PerformerRow performers={sector.worst} />
           </View>
-          <View style={[styles.footer,styles.iconBadge]}>
-            <Pressable
-              style={({ pressed }) => [styles.seeMoreButton, pressed && styles.seeMoreButtonPressed]}
-              onPress={sector.onClick}
-            >
-              <Text style={styles.seeMoreText}>View more</Text>
-              <Icon name="arrow-forward" size={14} color="#52525B" />
-            </Pressable>
-          </View>
+          <Pressable
+            style={({ pressed }) => [
+              styles.footer,
+              styles.iconBadge,
+               styles.seeMoreButton,  
+              pressed && styles.footerPressed,
+            ]}
+            android_ripple={{ color: "#ffff" }}
+            onPress={sector.onClick}
+          >
+            <Text style={styles.seeMoreText}>View more</Text>
+            <Icon name="arrow-forward" size={14} color="#52525B" />
+          </Pressable>
         </>
       )}
     </View>
@@ -212,7 +216,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 12,
     borderRadius: 8,
   },
   seeMoreButtonPressed: { backgroundColor: "#F4F4F5" },
@@ -226,6 +230,9 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingTop: 8,
   },
+  footerPressed: {
+    opacity: 0.85, // iOS/fallback feedback
+} ,
 });
 
 export default CardSectorPerf;

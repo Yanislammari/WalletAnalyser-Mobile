@@ -27,6 +27,7 @@ import { TransactionStyle } from '../styles/Transaction_style'
 import BackButton from '../components/button/BackButton';
 import ErrorCardInApp from '../components/card/ErrorCard';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { C } from '../utils/color';
 
 const PAGE_SIZE = 10;
 
@@ -321,13 +322,14 @@ const PortfolioDetail: React.FC = () => {
                 label="Dividends"
                 value={portfolioTotal ? fmt(portfolioTotal.totalDividends) : '—'}
                 currency={portfolioTotal?.currencyName}
+                note="Divdend earn"
               />
               <SummaryCell
                 label="Portfolio Value"
                 value={portfolioTotal ? fmt(portfolioTotal.portfolioMarketValue) : '—'}
                 currency={portfolioTotal?.currencyName}
                 valueColor="#1D4ED8"
-                bg="#EFF6FF"
+                bg="#dcebff"
                 note="Value of held positions"
               />
               <SummaryCell
@@ -335,7 +337,7 @@ const PortfolioDetail: React.FC = () => {
                 value={portfolioTotal ? fmt(portfolioTotal.totalValue) : '—'}
                 currency={portfolioTotal?.currencyName}
                 valueColor="#7C3AED"
-                bg="#F5F3FF"
+                bg="#e7e3ff"
                 note="Portfolio value + Sells + Dividends"
               />
               <SummaryCell
@@ -343,7 +345,7 @@ const PortfolioDetail: React.FC = () => {
                 value={pnl != null ? (pnl >= 0 ? '+' : '') + fmt(pnl) : '—'}
                 currency={portfolioTotal?.currencyName}
                 valueColor={pnl != null && pnl >= 0 ? '#15803D' : '#DC2626'}
-                bg={pnl != null && pnl >= 0 ? '#F0FDF4' : '#FEF2F2'}
+                bg={pnl != null && pnl >= 0 ? '#e2ffea' : '#ffe6e6'}
                 note="Including unrealized gains"
               />
             </View>
@@ -454,7 +456,7 @@ interface SummaryCellProps {
 }
 
 const SummaryCell: React.FC<SummaryCellProps> = ({
-  label, value, currency, valueColor = '#111827', bg = '#F9FAFB', note,
+  label, value, currency, valueColor = '#111827', bg = C.gray100, note,
 }) => (
   <View style={[TransactionStyle.summaryCell, { backgroundColor: bg }]}>
     <Text style={TransactionStyle.summaryCellLabel}>{label}</Text>

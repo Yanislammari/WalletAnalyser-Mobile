@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { C } from "../../utils/color";
 
 export const transactionTableStyle = StyleSheet.create({
   card: {
@@ -7,10 +8,10 @@ export const transactionTableStyle = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F3F4F6',
     shadowColor: '#000',
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
+    shadowOffset: { width: 0, height: 4},
+    elevation: 4,
     overflow: 'hidden',
   },
 
@@ -26,26 +27,26 @@ export const transactionTableStyle = StyleSheet.create({
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    marginRight: 4,
     borderRadius: 10,
-  },
-  tabActive: {
-    backgroundColor: '#F9FAFB',
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-    borderBottomWidth: 0,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
+    borderWidth: 0.25,
+    borderColor: C.gray500
+  },
+  tabActive: {
+    backgroundColor: '#f3ecff',
+    borderWidth: 1,
+    borderColor: C.gray200
   },
   tabLabel: { fontSize: 13, fontWeight: '500', color: '#9CA3AF' },
   tabLabelActive: { color: '#111827' },
   badge: {
     paddingHorizontal: 6,
     paddingVertical: 1,
-    borderRadius: 999,
+    borderRadius: 15,
+    marginLeft : 4,
     backgroundColor: '#F3F4F6',
   },
   badgeActive: { backgroundColor: '#EDE9FE' },
@@ -57,10 +58,16 @@ export const transactionTableStyle = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal : 12,
+    paddingTop: 12,
+    paddingBottom: 4
   },
-
+  divider: {
+    height: 1,
+    backgroundColor: '#E2E8F0', // A light grey line
+    paddingHorizontal : 16,
+    width: '100%',
+  },
   // Content
   content: { padding: 12 },
   loadingContainer: { paddingVertical: 40, alignItems: 'center' },

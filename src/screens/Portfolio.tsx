@@ -17,6 +17,8 @@ import { usePortfolio } from "../providers/PortfolioProvider";
 import ErrorCardInApp from "../components/card/ErrorCard";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { PortfolioStackParamList } from "../nav/NavBar";
+import { C } from "../utils/color";
+import SearchBar from "../components/search/SearchBar";
 
 const PAGE_SIZE = 9;
 
@@ -134,18 +136,7 @@ const Portfolios : React.FC = () => {
             <Icon name="add" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
-
-        {/* Search */}
-        <View style={stylesPortfolio.searchRow}>
-          <Icon name="search-outline" size={16} color="#9ca3af" style={stylesPortfolio.searchIcon} />
-          <TextInput
-            style={stylesPortfolio.searchInput}
-            placeholder="Search portfolios…"
-            placeholderTextColor="#9ca3af"
-            value={search}
-            onChangeText={setSearch}
-          />
-        </View>
+        <SearchBar value={search} onChange={setSearch} placeholder="Search portfolios..." />
 
         {/* Content */}
         {loading ? (

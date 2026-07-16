@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { C } from "../utils/color";
 
 export const PORTFOLIO_COLORS = [
   "#7c3aed", // purple
@@ -17,9 +18,9 @@ export const stylesPortfolio = StyleSheet.create({
   subtitle: { fontSize: 13, color: "#6b7280", marginTop: 2 },
   addBtn: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#7c3aed", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
   addBtnText: { color: "#fff", fontWeight: "600", fontSize: 13 },
-  searchRow: { flexDirection: "row", alignItems: "center", backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 12, marginBottom: 16, borderWidth: 1, borderColor: "#e5e7eb" },
+  searchRow: { flexDirection: "row", alignItems: "center", backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 12, marginBottom: 16, borderWidth: 1, borderColor: C.gray300 },
   searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, height: 42, color: "#111827", fontSize: 14 },
+  searchInput: { flex: 1, height: 42, color: "black", fontSize: 14 },
   loader: { marginTop: 60 },
   list: { paddingBottom: 16 },
   emptyState: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },

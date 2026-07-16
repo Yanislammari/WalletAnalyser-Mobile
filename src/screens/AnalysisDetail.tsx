@@ -53,6 +53,9 @@ const AnalysisDetail: React.FC = () => {
 
   useEffect(() => {
     let isCurrent = true;
+    hasScrolledOnceRef.current = false;
+    isAutoScrollingRef.current = safeOffset > 0;
+    didMountSearchRef.current = false;
     if (!isFirstFetch.current) setInitialLoading(true);
     setSectorMetaData(null);
     setHasError(false);
@@ -271,9 +274,8 @@ const AnalysisDetail: React.FC = () => {
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
             onStartReached={handleStartReached}
-            onStartReachedThreshold={1.5}
+            onStartReachedThreshold={0.5}
             maintainVisibleContentPosition={{
-              autoscrollToTopThreshold: 0.1,
               startRenderingFromBottom: false,
             }}
             ListFooterComponent={isLoadingMoreDown ? <Loading /> : null}
@@ -292,7 +294,7 @@ const styles = StyleSheet.create({
   title: { color: "#111827", fontSize: 20, fontWeight: "700", letterSpacing: -0.3 },
   subtitle: { color: "#6b7280", fontSize: 14, marginTop: 2 },
   searchContainer: { flexDirection: "row", alignItems: "center", gap: 8 },
-  listWrapper: { flex: 1, marginTop: 24, marginHorizontal: 16 },
+  listWrapper: { flex: 1, marginTop: 0, marginHorizontal: 16 },
   list: { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e4e4e7", borderRadius: 12, overflow: "hidden" },
   emptyText: { fontSize: 14, color: "#a1a1aa", textAlign: "center", paddingVertical: 24 },
   rowContainer: {
