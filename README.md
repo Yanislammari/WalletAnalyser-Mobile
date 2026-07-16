@@ -97,7 +97,9 @@ To learn more about React Native, take a look at the following resources:
 - [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
 
 npx react-native log-android
+npx react-native start --reset-cache
 npm run android
+
 adb devices
 adb shell setprop debug.firebase.analytics.app com.walletanalysermobile
 adb shell setprop debug.firebase.analytics.app .none.

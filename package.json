@@ -23,6 +23,7 @@
     "@shopify/flash-list": "^2.3.2",
     "react": "19.2.3",
     "react-native": "0.85.3",
+    "react-native-bootsplash": "^7.3.2",
     "react-native-config": "^1.6.1",
     "react-native-gesture-handler": "^3.0.2",
     "react-native-reanimated": "^4.5.0",

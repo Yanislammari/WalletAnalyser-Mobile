@@ -55,6 +55,9 @@ export default function SideMenu({ visible, onClose }: Props) {
 
           {/* Violet title banner */}
           <View style={styles.banner}>
+            <TouchableOpacity style={styles.iconBtn} onPress={onClose}>
+              <Icon name="menu-outline" size={26} color={C.white} />
+            </TouchableOpacity>
             <Text style={styles.bannerText}>WalletAnalyser</Text>
           </View>
 
@@ -110,6 +113,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
   },
+  iconBtn: {
+    padding: 4,
+    marginRight : 32
+  },
   backdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -130,10 +137,12 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   banner: {
-    backgroundColor: C.indigo700,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     marginBottom: 16,
+    backgroundColor: C.indigo700,
   },
   bannerText: {
     color: "#fff",

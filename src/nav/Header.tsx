@@ -37,7 +37,10 @@ export default function Header({ showChoice = true } : Props) {
           <View style={styles.switcherWrapper}>
             <Pressable
               style={styles.switcher}
-              onPress={() => setModalVisible(true)}
+              onPress={() => {
+                if(selectedPortfolio == null)return
+                setModalVisible(true)
+              }}
               android_ripple={{ color: C.purple100, borderless: false }}
             >
               <View style={styles.switcherIcon}>

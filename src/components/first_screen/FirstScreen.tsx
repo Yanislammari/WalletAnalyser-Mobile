@@ -1,6 +1,12 @@
+import { useEffect } from "react";
 import { View, Image, Text, StyleSheet, ActivityIndicator } from "react-native";
+import BootSplash from 'react-native-bootsplash';
 
 function FirstScreen() {
+  useEffect(() => {
+    BootSplash.hide({ fade: true });
+  }, []);
+  
   return (
     <View style={styles.container}>
       <Image
